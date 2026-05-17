@@ -8,38 +8,181 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 512'%3E%3Cpath fill='%230099cc' d='M622.3 162.4l-296-120c-16.5-6.7-35.1-6.7-51.6 0l-296 120c-17.2 7-20.1 29.5-4.8 39.4l112 72.3c2.4 1.5 5.2 2.3 8 2.3H504c2.8 0 5.6-.8 8-2.3l112-72.3c15.2-10 12.3-32.4-4.8-39.4zM532.7 301.9l-20.7 13.4c-6 3.9-13 6-20.1 6H148.1c-7.1 0-14.1-2.1-20.1-6l-20.7-13.4c-4.4-2.9-10.3-1.6-13.2 2.9l-21.3 32.8c-4.6 7.1-1.6 16.5 6.2 19.8l197.4 82.5c24.6 10.3 52.6 10.3 77.2 0l197.4-82.5c7.8-3.3 10.8-12.7 6.2-19.8l-21.3-32.8c-2.9-4.5-8.8-5.8-13.2-2.9z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="home-style.css">
     <style>
-        .profile-card { background:#fff; border-radius:30px; padding:35px 40px; max-width:650px; box-shadow:0 15px 40px rgba(0,0,0,0.06); margin-bottom:20px; }
-        .profile-header { display:flex; align-items:center; gap:24px; margin-bottom:25px; }
-        .profile-avatar { width:80px; height:80px; border-radius:50%; border:3px solid #0099cc; }
-        .profile-info h2 { font-size:22px; font-weight:700; color:#023e50; }
-        .profile-info .uname { font-size:14px; color:#8e9fae; font-weight:600; }
-        .profile-info .streak { font-size:13px; color:#f39c12; font-weight:700; margin-top:4px; }
-        .stats-row { display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px; }
-        .stat-box { background:#f0f4f8; border-radius:16px; padding:14px 22px; text-align:center; flex:1; min-width:90px; }
-        .stat-box .val { font-size:22px; font-weight:700; color:#023e50; }
-        .stat-box .lbl { font-size:11px; color:#8e9fae; font-weight:600; text-transform:uppercase; margin-top:3px; }
-        .badges-section h3 { font-size:16px; font-weight:700; color:#023e50; margin-bottom:12px; }
-        .badges-grid { display:flex; gap:10px; flex-wrap:wrap; min-height:40px; }
-        .badge-chip { background:#f0f4f8; border-radius:12px; padding:8px 14px; font-size:20px; border:2px solid transparent; cursor:default; transition:0.2s; }
-        .badge-chip:hover { border-color:#0099cc; transform:scale(1.1); }
-        .no-badges { font-size:14px; color:#8e9fae; }
-        .edit-row { display:flex; gap:10px; margin-top:18px; }
-        .edit-input { flex:1; height:44px; background:#f0f4f8; border:2px solid transparent; border-radius:14px; padding:0 16px; font-size:14px; font-weight:600; font-family:'Montserrat',sans-serif; outline:none; transition:0.3s; }
-        .edit-input:focus { border-color:#0099cc; background:#fff; }
-        .save-btn { height:44px; padding:0 22px; background:linear-gradient(90deg,#023e50,#0099cc); border:none; border-radius:14px; color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:'Montserrat',sans-serif; transition:0.2s; white-space:nowrap; }
-        .save-btn:hover { box-shadow:0 5px 15px rgba(0,153,204,0.25); transform:translateY(-1px); }
-        .xp-bar-wrap { margin:10px 0 20px; }
-        .xp-bar-label { display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#023e50; margin-bottom:6px; }
-        .xp-bar { height:8px; background:#e9eff5; border-radius:10px; overflow:hidden; }
-        .xp-bar-fill { height:100%; background:linear-gradient(90deg,#0099cc,#023e50); border-radius:10px; transition:1s; }
-        .logout-btn { background:#e9eff5; color:#023e50; border:none; border-radius:14px; padding:12px 24px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Montserrat',sans-serif; margin-top:10px; transition:0.2s; }
-        .logout-btn:hover { background:#e74c3c; color:#fff; }
-        .admin-box { margin-top:20px; background:#fffcf0; border:2px dashed #f39c12; border-radius:20px; padding:22px; }
-        .admin-box h3 { color:#d35400; font-size:16px; font-weight:700; margin-bottom:10px; }
-        .admin-stats { display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px; }
-        .admin-stat { background:#fff; border-radius:12px; padding:12px 18px; text-align:center; flex:1; min-width:80px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
-        .admin-stat .v { font-size:20px; font-weight:700; color:#023e50; }
-        .admin-stat .l { font-size:11px; color:#8e9fae; font-weight:600; }
+        .profile-page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+        .pcard {
+            background: #fff; border-radius: 24px; padding: 26px 30px;
+            box-shadow: 0 4px 24px rgba(2,62,80,0.07);
+            animation: slideUp .4s ease both;
+        }
+        .pcard:nth-child(1){animation-delay:.04s}.pcard:nth-child(2){animation-delay:.09s}
+        .pcard:nth-child(3){animation-delay:.14s}.pcard:nth-child(4){animation-delay:.19s}
+        .pcard:nth-child(5){animation-delay:.24s}.pcard:nth-child(6){animation-delay:.29s}
+        @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+        .card-heading {
+            font-size:13px; font-weight:700; color:#023e50; text-transform:uppercase;
+            letter-spacing:.8px; margin-bottom:18px; display:flex; align-items:center; gap:8px;
+        }
+        .card-heading i { color:#0099cc; }
+
+        /* Hero */
+        .hero { display:flex; align-items:center; gap:20px; }
+        .avatar-shell { position:relative; cursor:pointer; flex-shrink:0; }
+        .avatar-img {
+            width:78px; height:78px; border-radius:50%; border:3px solid #0099cc;
+            background:#e9eff5; display:flex; align-items:center; justify-content:center;
+            font-size:40px; overflow:hidden; transition:.2s;
+            box-shadow:0 4px 16px rgba(0,153,204,.2);
+        }
+        .avatar-img img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+        .avatar-shell:hover .avatar-img { border-color:#023e50; transform:scale(1.05); }
+        .avatar-badge {
+            position:absolute; bottom:0; right:0; background:#0099cc; color:#fff;
+            border-radius:50%; width:22px; height:22px; font-size:10px;
+            display:flex; align-items:center; justify-content:center;
+            box-shadow:0 2px 8px rgba(0,153,204,.4);
+        }
+        .hero-info { flex:1; min-width:0; }
+        .hero-nick { font-size:22px; font-weight:800; color:#023e50; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .hero-login { font-size:13px; color:#94a3b8; font-weight:600; margin-top:2px; }
+        .hero-streak { font-size:13px; color:#f59e0b; font-weight:700; margin-top:5px; display:flex; align-items:center; gap:5px; }
+        .hero-joined { font-size:11px; color:#b0bec5; margin-top:4px; }
+
+        /* Stats */
+        .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px; margin-top:20px; }
+        .stat-box { background:#f0f4f8; border-radius:16px; padding:14px 8px; text-align:center; }
+        .stat-val { font-size:22px; font-weight:800; color:#023e50; }
+        .stat-lbl { font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase; margin-top:3px; letter-spacing:.5px; }
+
+        /* XP bar */
+        .xp-labels { display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#023e50; margin-bottom:6px; }
+        .xp-track { height:10px; background:#e9eff5; border-radius:10px; overflow:hidden; }
+        .xp-fill { height:100%; background:linear-gradient(90deg,#0099cc,#023e50); border-radius:10px; width:0; transition:width 1.2s cubic-bezier(.25,.46,.45,.94); }
+
+        /* Daily */
+        .daily-row { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+        .daily-streak-num { font-size:36px; font-weight:900; color:#f59e0b; line-height:1; }
+        .daily-title { font-size:14px; font-weight:700; color:#023e50; }
+        .daily-sub { font-size:12px; color:#94a3b8; margin-top:2px; }
+        .claim-btn {
+            padding:12px 22px; border:none; border-radius:14px;
+            background:linear-gradient(90deg,#10b981,#059669); color:#fff;
+            font-size:13px; font-weight:800; font-family:'Montserrat',sans-serif;
+            cursor:pointer; transition:.2s; white-space:nowrap;
+            box-shadow:0 4px 14px rgba(16,185,129,.25);
+        }
+        .claim-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 20px rgba(16,185,129,.4);}
+        .claim-btn:disabled{background:#d1d5db;color:#9ca3af;box-shadow:none;cursor:not-allowed;}
+
+        /* Quest */
+        .quest-ui {
+            display:flex; align-items:center; justify-content:space-between; gap:12px;
+            background:#f8fafc; border-radius:14px; padding:14px 16px;
+            border:1px solid #e9edf2; margin-top:16px;
+        }
+        .quest-title-ui { font-size:13px; font-weight:700; color:#334155; }
+        .quest-sub-ui { font-size:11px; color:#94a3b8; margin-top:3px; }
+        .quest-pill {
+            padding:7px 14px; border-radius:10px; font-size:12px; font-weight:800;
+            background:#e9edf2; color:#8e9fae; white-space:nowrap;
+        }
+        .quest-pill.done{background:#10b981;color:#fff;}
+        .quest-pill.prog{background:#dbeafe;color:#1d4ed8;}
+
+        /* Avatars grid */
+        .coll-grid { display:flex; flex-wrap:wrap; gap:10px; }
+        .ava-item {
+            width:56px; height:56px; border-radius:50%; border:2px solid transparent;
+            cursor:pointer; background:#f0f4f8; display:flex; align-items:center; justify-content:center;
+            font-size:28px; transition:.2s; position:relative; overflow:hidden;
+        }
+        .ava-item img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+        .ava-item:hover{border-color:#0099cc;transform:scale(1.08);}
+        .ava-item.active-ava{border-color:#0099cc;box-shadow:0 0 0 3px rgba(0,153,204,.2);}
+        .ava-item.active-ava::after{
+            content:'✓'; position:absolute; bottom:-1px; right:-1px;
+            width:18px; height:18px; border-radius:50%;
+            background:#0099cc; color:#fff; font-size:9px; font-weight:800;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .empty-coll{font-size:13px;color:#94a3b8;}
+
+        /* Badges */
+        .badge-grid{display:flex;flex-wrap:wrap;gap:8px;}
+        .badge-chip{
+            background:#f0f4f8; border-radius:12px; padding:8px 13px;
+            font-size:22px; border:2px solid transparent; transition:.2s; cursor:default;
+        }
+        .badge-chip:hover{border-color:#0099cc;transform:scale(1.1);}
+
+        /* Nickname */
+        .nick-row{display:flex;gap:10px;}
+        .nick-input{
+            flex:1; height:46px; background:#f0f4f8; border:2px solid transparent;
+            border-radius:14px; padding:0 16px; font-size:14px; font-weight:600;
+            font-family:'Montserrat',sans-serif; outline:none; transition:.2s; color:#023e50;
+        }
+        .nick-input:focus{border-color:#0099cc;background:#fff;}
+        .nick-btn{
+            height:46px; padding:0 22px; background:linear-gradient(90deg,#023e50,#0099cc);
+            border:none; border-radius:14px; color:#fff; font-size:13px; font-weight:700;
+            cursor:pointer; font-family:'Montserrat',sans-serif; transition:.2s; white-space:nowrap;
+        }
+        .nick-btn:hover:not(:disabled){box-shadow:0 5px 15px rgba(0,153,204,.3);transform:translateY(-1px);}
+        .nick-btn:disabled{background:#c8d6df;cursor:not-allowed;}
+        .nick-hint{font-size:11px;color:#94a3b8;margin-top:8px;}
+
+        /* Logout */
+        .logout-btn{
+            width:100%; padding:13px; background:#f0f4f8; color:#023e50; border:none;
+            border-radius:14px; font-size:14px; font-weight:700;
+            cursor:pointer; font-family:'Montserrat',sans-serif; transition:.2s; margin-top:20px;
+        }
+        .logout-btn:hover{background:#e74c3c;color:#fff;}
+
+        /* Admin */
+        .admin-card{border:2px dashed #f59e0b;background:#fffbf0;}
+        .admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+        .admin-stat{background:#fff;border-radius:14px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+        .admin-stat .av{font-size:22px;font-weight:800;color:#023e50;}
+        .admin-stat .al{font-size:11px;color:#94a3b8;font-weight:700;}
+
+        /* Loader */
+        .ploader{text-align:center;padding:60px 20px;color:#94a3b8;font-size:15px;font-weight:600;}
+
+        /* Avatar picker modal */
+        .modal-ov{
+            display:none;position:fixed;inset:0;z-index:3000;
+            background:rgba(2,62,80,.55);backdrop-filter:blur(6px);
+            align-items:center;justify-content:center;
+        }
+        .modal-ov.open{display:flex;}
+        .modal-box{
+            background:#fff;border-radius:26px;width:90%;max-width:480px;
+            max-height:80vh;overflow-y:auto;padding:28px;
+            box-shadow:0 30px 80px rgba(0,0,0,.2);
+            animation:popIn .3s cubic-bezier(.34,1.56,.64,1);
+        }
+        @keyframes popIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+        .modal-title{font-size:17px;font-weight:800;color:#023e50;margin-bottom:4px;}
+        .modal-sub{font-size:12px;color:#94a3b8;margin-bottom:18px;}
+        .modal-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
+        .modal-close-btn{
+            background:#e9eff5;border:none;border-radius:50%;width:32px;height:32px;
+            cursor:pointer;font-size:14px;color:#023e50;
+            display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0;
+        }
+        .modal-close-btn:hover{background:#0099cc;color:#fff;}
+        .picker-grid{display:flex;flex-wrap:wrap;gap:12px;}
+        .picker-item{
+            width:64px;height:64px;border-radius:50%;border:2.5px solid #e9eff5;
+            cursor:pointer;background:#f0f4f8;display:flex;align-items:center;justify-content:center;
+            font-size:32px;transition:.2s;overflow:hidden;
+        }
+        .picker-item img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+        .picker-item:hover{border-color:#0099cc;transform:scale(1.1);}
+        .picker-item.selected{border-color:#0099cc;box-shadow:0 0 0 4px rgba(0,153,204,.2);}
     </style>
 </head>
 <body>
@@ -59,9 +202,123 @@
     <main class="main-content">
         <section class="app-window">
             <h1>Личный кабинет</h1>
-            <div id="profileContent"><div style="color:#8e9fae;font-size:15px;padding:20px 0"><i class="fa-solid fa-circle-notch fa-spin"></i> Загрузка...</div></div>
+
+            <div id="pLoader" class="ploader"><i class="fa-solid fa-circle-notch fa-spin"></i> Загрузка профиля…</div>
+
+            <div class="profile-page" id="profilePage" style="display:none">
+
+                <!-- ① HERO -->
+                <div class="pcard">
+                    <div class="hero">
+                        <div class="avatar-shell" onclick="openAvatarPicker()" title="Сменить аватар">
+                            <div class="avatar-img" id="bigAvatar">🐱</div>
+                            <div class="avatar-badge"><i class="fa-solid fa-pen"></i></div>
+                        </div>
+                        <div class="hero-info">
+                            <div class="hero-nick" id="heroNick">—</div>
+                            <div class="hero-login" id="heroLogin">@—</div>
+                            <div class="hero-streak" id="heroStreak"><i class="fa-solid fa-fire"></i> 0 дней</div>
+                            <div class="hero-joined" id="heroJoined"></div>
+                        </div>
+                    </div>
+
+                    <div class="stats-row">
+                        <div class="stat-box"><div class="stat-val" id="statLevel">1</div><div class="stat-lbl">Уровень</div></div>
+                        <div class="stat-box"><div class="stat-val" id="statXP">0</div><div class="stat-lbl">XP</div></div>
+                        <div class="stat-box"><div class="stat-val" id="statBalance">0</div><div class="stat-lbl">Монеты</div></div>
+                        <div class="stat-box"><div class="stat-val" id="statTopics">0</div><div class="stat-lbl">Тем</div></div>
+                    </div>
+
+                    <div class="xp-labels">
+                        <span id="xpLeft">Ур. 1</span>
+                        <span id="xpRight">0 / 200 XP</span>
+                    </div>
+                    <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+                </div>
+
+                <!-- ② ЕЖЕДНЕВНЫЙ БОНУС -->
+                <div class="pcard">
+                    <div class="card-heading"><i class="fa-solid fa-calendar-check"></i> Ежедневный бонус</div>
+                    <div class="daily-row">
+                        <div>
+                            <div class="daily-streak-num" id="dailyStreak">0</div>
+                            <div class="daily-title">дней подряд 🔥</div>
+                            <div class="daily-sub" id="dailySub">Забери бонус прямо сейчас!</div>
+                        </div>
+                        <button class="claim-btn" id="claimBtn" onclick="claimDaily()">Забрать бонус</button>
+                    </div>
+
+                    <div class="quest-ui">
+                        <div>
+                            <div class="quest-title-ui">🎮 Дейлик: выиграй 5 разных игр</div>
+                            <div class="quest-sub-ui" id="questSub">0 из 5 побед сегодня</div>
+                        </div>
+                        <div class="quest-pill" id="questPill">0 / 5</div>
+                    </div>
+                </div>
+
+                <!-- ③ АВАТАРЫ -->
+                <div class="pcard">
+                    <div class="card-heading"><i class="fa-solid fa-images"></i> Мои аватары</div>
+                    <div class="coll-grid" id="avatarsGrid"><span class="empty-coll">Нет аватаров</span></div>
+                    <div style="font-size:12px;color:#94a3b8;margin-top:12px">
+                        Нажми на аватар, чтобы выбрать активный. Новые аватары — в <a href="shop.html" style="color:#0099cc;font-weight:700">Магазине</a>.
+                    </div>
+                </div>
+
+                <!-- ④ ЗНАЧКИ -->
+                <div class="pcard">
+                    <div class="card-heading">
+                        <i class="fa-solid fa-medal"></i> Значки
+                        <span id="badgeCount" style="font-size:12px;color:#94a3b8;font-weight:600">(0)</span>
+                    </div>
+                    <div class="badge-grid" id="badgesGrid">
+                        <span class="empty-coll">Пока нет значков — играй и получай их!</span>
+                    </div>
+                </div>
+
+                <!-- ⑤ НИКНЕЙМ + ВЫХОД -->
+                <div class="pcard">
+                    <div class="card-heading"><i class="fa-solid fa-pen-to-square"></i> Изменить никнейм</div>
+                    <div class="nick-row">
+                        <input class="nick-input" id="nickInput" type="text" placeholder="Новый никнейм…" maxlength="32">
+                        <button class="nick-btn" id="nickBtn" onclick="saveNickname()">Сохранить</button>
+                    </div>
+                    <div class="nick-hint" id="nickHint">Менять не чаще раза в неделю.</div>
+                    <button class="logout-btn" onclick="API.logout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Выйти из аккаунта
+                    </button>
+                </div>
+
+                <!-- ⑥ АДМИН (только для is_admin) -->
+                <div class="pcard admin-card" id="adminCard" style="display:none">
+                    <div class="card-heading" style="color:#d97706">
+                        <i class="fa-solid fa-crown" style="color:#f59e0b"></i> Панель администратора
+                    </div>
+                    <div class="admin-stats">
+                        <div class="admin-stat"><div class="av" id="asUsers">—</div><div class="al">Игроков</div></div>
+                        <div class="admin-stat"><div class="av" id="asGames">—</div><div class="al">Игр сыграно</div></div>
+                        <div class="admin-stat"><div class="av" id="asXP">—</div><div class="al">Суммарный XP</div></div>
+                    </div>
+                </div>
+
+            </div>
         </section>
     </main>
+
+    <!-- Avatar picker modal -->
+    <div class="modal-ov" id="avatarModal">
+        <div class="modal-box">
+            <div class="modal-top">
+                <div>
+                    <div class="modal-title">Выбери аватар</div>
+                    <div class="modal-sub">Только из твоей коллекции</div>
+                </div>
+                <button class="modal-close-btn" onclick="closeAvatarPicker()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="picker-grid" id="pickerGrid"></div>
+        </div>
+    </div>
 
     <nav class="bottom-tabbar">
         <a href="games.html" class="tab-item"><i class="fa-solid fa-gamepad"></i><span>Игры</span></a>
@@ -75,111 +332,346 @@
 
     <script src="api.js"></script>
     <script>
+    /* ================================================================
+       AVATAR MAP  emoji → { img, label }
+       Matches the avatar pool from shop.html / backend store
+    ================================================================ */
+    const AV = {
+        '🐱':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=cat&backgroundColor=b6e3f4',      lbl:'Кот' },
+        '🐶':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=dog&backgroundColor=ffd5dc',      lbl:'Пёс' },
+        '🦊':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=fox&backgroundColor=c0aede',      lbl:'Лис' },
+        '🐼':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=panda&backgroundColor=d1f4e0',    lbl:'Панда' },
+        '🐨':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=koala&backgroundColor=e0f2fe',    lbl:'Коала' },
+        '🦁':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=lion&backgroundColor=fef9c3',     lbl:'Лев' },
+        '🐯':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=tiger&backgroundColor=ffedd5',    lbl:'Тигр' },
+        '🐻':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=bear&backgroundColor=ffd5dc',     lbl:'Медведь' },
+        '🐸':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=frog&backgroundColor=d1f4e0',     lbl:'Лягушка' },
+        '🦄':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=unicorn&backgroundColor=bfdbfe',  lbl:'Единорог' },
+        '🐉':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=dragon&backgroundColor=93c5fd',   lbl:'Дракон' },
+        '🦋':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=butterfly&backgroundColor=c4b5fd',lbl:'Бабочка' },
+        '🦚':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=peacock&backgroundColor=a5f3fc',  lbl:'Павлин' },
+        '🦜':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=parrot&backgroundColor=bbf7d0',   lbl:'Попугай' },
+        '🦩':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=flamingo&backgroundColor=fce7f3', lbl:'Фламинго' },
+        '🐬':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=dolphin&backgroundColor=bae6fd',  lbl:'Дельфин' },
+        '🧙':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=wizard&backgroundColor=ddd6fe',   lbl:'Маг' },
+        '🧛':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=vampire&backgroundColor=fecdd3',  lbl:'Вампир' },
+        '🧜':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=mermaid&backgroundColor=a5f3fc',  lbl:'Русалка' },
+        '🧝':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=elf&backgroundColor=bbf7d0',      lbl:'Эльф' },
+        '🦸':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=hero&backgroundColor=d9f99d',     lbl:'Герой' },
+        '👑':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=crown&backgroundColor=fef08a',    lbl:'Корона' },
+        '🌟':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=star&backgroundColor=fde68a',     lbl:'Звезда' },
+        '💫':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=comet&backgroundColor=ffe4e6',    lbl:'Комета' },
+        '🌈':{ img:'https://api.dicebear.com/7.x/bottts/svg?seed=rainbow&backgroundColor=fbcfe8',  lbl:'Радуга' },
+    };
+
+    function avSrc(emoji, username) {
+        return AV[emoji] ? AV[emoji].img
+            : 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(username || 'user');
+    }
+
+    function mkAvatarImg(emoji, username) {
+        const img = document.createElement('img');
+        img.src = avSrc(emoji, username);
+        img.alt = AV[emoji] ? AV[emoji].lbl : emoji;
+        img.onerror = () => { img.style.display='none'; img.parentElement.textContent = emoji; };
+        return img;
+    }
+
+    /* ================================================================
+       XP / LEVEL helpers
+    ================================================================ */
+    function level(xp)    { return Math.floor(xp / 200) + 1; }
+    function xpMod(xp)    { return xp % 200; }
+    function streakWord(n){ return n===1?'день':n<5?'дня':'дней'; }
+
+    /* ================================================================
+       STATE
+    ================================================================ */
+    let USER = null;
+
+    /* ================================================================
+       BOOT
+    ================================================================ */
     initHeader();
-    let userData = null;
 
     async function loadProfile() {
-        const r = await API.refreshUser();
-        if (!r) return;
-        userData = r;
-        renderProfile(r);
+        const r = await API.get('/api/me');
+        if (!r.ok) {
+            document.getElementById('pLoader').innerHTML =
+                '<i class="fa-solid fa-triangle-exclamation" style="color:#e74c3c"></i> Не удалось загрузить профиль';
+            return;
+        }
+        USER = r.data;
+        localStorage.setItem('currentUser', JSON.stringify(USER));
+        renderAll(USER);
     }
 
-    function levelFromXP(xp) {
-        return Math.floor(xp / 200) + 1;
-    }
-    function xpToNextLevel(xp) {
-        const lvl = levelFromXP(xp);
-        return lvl * 200;
-    }
+    function renderAll(u) {
+        document.getElementById('pLoader').style.display = 'none';
+        document.getElementById('profilePage').style.display = 'flex';
 
-    function renderProfile(u) {
-        const level = levelFromXP(u.xp);
-        const nextXP = xpToNextLevel(u.xp);
-        const xpPct = Math.min(100, Math.round((u.xp % 200) / 200 * 100));
+        /* ── Hero ── */
+        const ava = u.active_avatar || (u.avatars && u.avatars[0]) || '🐱';
+        const bigAva = document.getElementById('bigAvatar');
+        bigAva.innerHTML = '';
+        bigAva.appendChild(mkAvatarImg(ava, u.username));
 
-        document.getElementById('profileContent').innerHTML = `
-        <div class="profile-card">
-            <div class="profile-header">
-                <img class="profile-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}" alt="">
-                <div class="profile-info">
-                    <h2>${u.nickname || u.username}</h2>
-                    <div class="uname">@${u.username}</div>
-                    <div class="streak">🔥 Серия: ${u.streak || 0} ${u.streak === 1 ? 'день' : u.streak < 5 ? 'дня' : 'дней'}</div>
-                </div>
-            </div>
+        document.getElementById('heroNick').textContent  = u.nickname || u.username;
+        document.getElementById('heroLogin').textContent = '@' + u.username;
+        const s = u.streak || 0;
+        document.getElementById('heroStreak').innerHTML  = `<i class="fa-solid fa-fire"></i> ${s} ${streakWord(s)}`;
+        if (u.created_at) {
+            document.getElementById('heroJoined').textContent =
+                'На платформе с ' + new Date(u.created_at).toLocaleDateString('ru-RU',{year:'numeric',month:'long',day:'numeric'});
+        }
 
-            <div class="stats-row">
-                <div class="stat-box"><div class="val">${level}</div><div class="lbl">Уровень</div></div>
-                <div class="stat-box"><div class="val">${u.xp}</div><div class="lbl">XP</div></div>
-                <div class="stat-box"><div class="val">${u.balance}</div><div class="lbl">Монеты</div></div>
-                <div class="stat-box"><div class="val">${(u.completed_topics||[]).length}</div><div class="lbl">Тем</div></div>
-            </div>
-
-            <div class="xp-bar-wrap">
-                <div class="xp-bar-label"><span>Уровень ${level}</span><span>${u.xp % 200} / 200 XP до ур. ${level+1}</span></div>
-                <div class="xp-bar"><div class="xp-bar-fill" id="xpFill" style="width:0%"></div></div>
-            </div>
-
-            <div class="badges-section">
-                <h3>🏅 Мои значки (${(u.badges||[]).length})</h3>
-                <div class="badges-grid">
-                    ${(u.badges||[]).length ? u.badges.map(b=>`<div class="badge-chip" title="${b}">${b}</div>`).join('') : '<span class="no-badges">Пока нет значков. Играй и получай их!</span>'}
-                </div>
-            </div>
-
-            <div style="margin-top:20px;">
-                <h3 style="font-size:14px;font-weight:700;color:#023e50;margin-bottom:10px;">✏️ Изменить никнейм</h3>
-                <div class="edit-row">
-                    <input class="edit-input" id="newNick" placeholder="Новый никнейм..." value="${u.nickname||''}">
-                    <button class="save-btn" onclick="saveNickname()">Сохранить</button>
-                </div>
-            </div>
-
-            <button class="logout-btn" onclick="API.logout()"><i class="fa-solid fa-right-from-bracket"></i> Выйти из аккаунта</button>
-        </div>
-
-        ${u.is_admin ? `
-        <div class="profile-card admin-box">
-            <h3>👑 Панель администратора</h3>
-            <div class="admin-stats" id="adminStats"><div style="color:#8e9fae;font-size:13px">Загрузка...</div></div>
-            <p style="font-size:13px;color:#7f8c8d;">Все зарегистрированные пользователи и статистика платформы в реальном времени.</p>
-        </div>` : ''}
-        `;
-
+        /* ── Stats ── */
+        const lvl = level(u.xp);
+        const mod = xpMod(u.xp);
+        document.getElementById('statLevel').textContent   = lvl;
+        document.getElementById('statXP').textContent      = u.xp;
+        document.getElementById('statBalance').textContent = u.balance;
+        document.getElementById('statTopics').textContent  = (u.completed_topics||[]).length;
+        document.getElementById('xpLeft').textContent      = 'Ур. ' + lvl;
+        document.getElementById('xpRight').textContent     = mod + ' / 200 XP до ур. ' + (lvl+1);
         setTimeout(() => {
-            const fill = document.getElementById('xpFill');
-            if (fill) fill.style.width = xpPct + '%';
-        }, 100);
+            document.getElementById('xpFill').style.width = Math.min(100, Math.round(mod/200*100)) + '%';
+        }, 150);
 
-        if (u.is_admin) loadAdminStats();
-    }
+        /* ── Daily claim ── */
+        renderDaily(u);
 
-    async function saveNickname() {
-        const nick = document.getElementById('newNick').value.trim();
-        if (!nick) return;
-        const r = await API.put('/api/profile/nickname', { nickname: nick });
-        if (r.ok) {
-            userData = r.data;
-            localStorage.setItem('currentUser', JSON.stringify(r.data));
-            document.getElementById('headerUsername').textContent = r.data.nickname;
-            showToast('Никнейм обновлён ✓', 'success');
+        /* ── Avatars ── */
+        const avGrid = document.getElementById('avatarsGrid');
+        avGrid.innerHTML = '';
+        const owned = (u.avatars && u.avatars.length) ? u.avatars : ['🐱'];
+        owned.forEach(emoji => {
+            const item = document.createElement('div');
+            item.className = 'ava-item' + (emoji === ava ? ' active-ava' : '');
+            item.title     = AV[emoji] ? AV[emoji].lbl : emoji;
+            item.appendChild(mkAvatarImg(emoji, u.username));
+            item.onclick   = () => setAvatar(emoji);
+            avGrid.appendChild(item);
+        });
+
+        /* ── Badges ── */
+        const bgGrid = document.getElementById('badgesGrid');
+        bgGrid.innerHTML = '';
+        const badges = u.badges || [];
+        document.getElementById('badgeCount').textContent = '(' + badges.length + ')';
+        if (badges.length) {
+            badges.forEach(b => {
+                const chip = document.createElement('div');
+                chip.className = 'badge-chip'; chip.title = b; chip.textContent = b;
+                bgGrid.appendChild(chip);
+            });
         } else {
-            showToast(r.data.error || 'Ошибка', 'error');
+            bgGrid.innerHTML = '<span class="empty-coll">Пока нет значков — играй и получай их!</span>';
+        }
+
+        /* ── Nickname ── */
+        document.getElementById('nickInput').value = u.nickname || '';
+        refreshNickCooldown(u);
+
+        /* ── Admin ── */
+        if (u.is_admin) {
+            document.getElementById('adminCard').style.display = '';
+            loadAdminStats();
         }
     }
 
+    /* ================================================================
+       DAILY CLAIM
+    ================================================================ */
+    function renderDaily(u) {
+        const today  = new Date().toISOString().slice(0,10);
+        const s      = u.streak || 0;
+        const reward = 10 + Math.floor(s/7)*5;
+        const claimed = u.last_daily_claim === today;
+
+        document.getElementById('dailyStreak').textContent = s;
+        const btn = document.getElementById('claimBtn');
+        const sub = document.getElementById('dailySub');
+
+        if (claimed) {
+            btn.textContent = '✓ Уже получено';
+            btn.disabled    = true;
+            sub.textContent = 'Приходи завтра за новым бонусом!';
+        } else {
+            btn.textContent = `Забрать ${reward} монет 🔥`;
+            btn.disabled    = false;
+            sub.textContent = `Сегодняшний бонус: +${reward} монет`;
+        }
+
+        // Quest
+        const questDone = u.daily_tasks_date === today && u.daily_tasks_done > 0;
+        const won       = (u.daily_tasks_date === today) ? (u.games_won_today || 0) : 0;
+        const pill      = document.getElementById('questPill');
+        const qsub      = document.getElementById('questSub');
+        if (questDone) {
+            pill.textContent = '✓ Выполнено';
+            pill.className   = 'quest-pill done';
+            qsub.textContent = 'Отлично! +50 монет за дейлик получено!';
+        } else {
+            pill.textContent = won + ' / 5';
+            pill.className   = 'quest-pill' + (won > 0 ? ' prog' : '');
+            qsub.textContent = won > 0
+                ? `Прогресс: ${won}/5 — ещё ${5-won} побед!`
+                : 'Выиграй 5 разных игр сегодня → +50 монет';
+        }
+    }
+
+    async function claimDaily() {
+        const btn = document.getElementById('claimBtn');
+        btn.disabled    = true;
+        btn.textContent = '…';
+
+        const r = await API.post('/api/daily/claim', {});
+        if (!r.ok) { btn.disabled = false; btn.textContent = 'Забрать бонус'; return; }
+
+        if (r.data.already_claimed) {
+            btn.textContent = '✓ Уже получено';
+            showToast('Бонус уже получен сегодня!', 'warn');
+            return;
+        }
+
+        const coins  = r.data.coins_earned || 10;
+        const streak = r.data.streak || 0;
+        const newBal = r.data.new_balance;
+
+        // Update UI
+        document.getElementById('dailyStreak').textContent       = streak;
+        document.getElementById('userBalance').textContent       = newBal;
+        document.getElementById('statBalance').textContent       = newBal;
+        document.getElementById('heroStreak').innerHTML          = `<i class="fa-solid fa-fire"></i> ${streak} ${streakWord(streak)}`;
+        btn.textContent = '✓ Уже получено';
+        document.getElementById('dailySub').textContent = 'Приходи завтра за новым бонусом!';
+
+        // Sync state
+        if (USER) { USER.balance = newBal; USER.streak = streak; USER.last_daily_claim = new Date().toISOString().slice(0,10); localStorage.setItem('currentUser', JSON.stringify(USER)); }
+        showToast(`🔥 Серия ${streak} ${streakWord(streak)}! +${coins} монет`, 'success');
+    }
+
+    /* ================================================================
+       SET ACTIVE AVATAR  (client-only — saved in localStorage)
+       NOTE: backend has no dedicated /api/profile/avatar endpoint,
+       so we persist the choice in localStorage and patch the cached user.
+    ================================================================ */
+    function setAvatar(emoji) {
+        if (!USER) return;
+        USER.active_avatar = emoji;
+        localStorage.setItem('currentUser', JSON.stringify(USER));
+
+        // Big avatar
+        const bigAva = document.getElementById('bigAvatar');
+        bigAva.innerHTML = '';
+        bigAva.appendChild(mkAvatarImg(emoji, USER.username));
+
+        // Header avatar
+        const hAva = document.getElementById('headerAvatar');
+        if (hAva) hAva.src = avSrc(emoji, USER.username);
+
+        // Grid active state
+        document.querySelectorAll('.ava-item').forEach(el => {
+            const isActive = el.title === (AV[emoji] ? AV[emoji].lbl : emoji);
+            el.classList.toggle('active-ava', isActive);
+        });
+
+        closeAvatarPicker();
+        showToast('Аватар обновлён ✓', 'success');
+    }
+
+    /* ================================================================
+       AVATAR PICKER MODAL
+    ================================================================ */
+    function openAvatarPicker() {
+        if (!USER) return;
+        const grid  = document.getElementById('pickerGrid');
+        grid.innerHTML = '';
+        const owned  = (USER.avatars && USER.avatars.length) ? USER.avatars : ['🐱'];
+        const active = USER.active_avatar || owned[0];
+
+        owned.forEach(emoji => {
+            const item = document.createElement('div');
+            item.className = 'picker-item' + (emoji === active ? ' selected' : '');
+            item.title     = AV[emoji] ? AV[emoji].lbl : emoji;
+            item.appendChild(mkAvatarImg(emoji, USER.username));
+            item.onclick   = () => setAvatar(emoji);
+            grid.appendChild(item);
+        });
+
+        document.getElementById('avatarModal').classList.add('open');
+    }
+
+    function closeAvatarPicker() {
+        document.getElementById('avatarModal').classList.remove('open');
+    }
+
+    document.getElementById('avatarModal').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeAvatarPicker();
+    });
+
+    /* ================================================================
+       NICKNAME  — PUT /api/profile/nickname  (max 1x per week)
+    ================================================================ */
+    function refreshNickCooldown(u) {
+        const btn  = document.getElementById('nickBtn');
+        const hint = document.getElementById('nickHint');
+        if (!u || !u.last_nick_change) {
+            btn.disabled = false;
+            hint.textContent = 'Менять не чаще раза в неделю.';
+            return;
+        }
+        const diff = Date.now() - new Date(u.last_nick_change).getTime();
+        const week = 7*24*3600*1000;
+        if (diff < week) {
+            btn.disabled = true;
+            const days = Math.ceil((week-diff)/(24*3600*1000));
+            hint.textContent = `Следующая смена через ${days} ${days===1?'день':days<5?'дня':'дней'}.`;
+        } else {
+            btn.disabled = false;
+            hint.textContent = 'Менять не чаще раза в неделю.';
+        }
+    }
+
+    async function saveNickname() {
+        const nick = document.getElementById('nickInput').value.trim();
+        if (!nick) return;
+
+        const btn = document.getElementById('nickBtn');
+        btn.disabled = true; btn.textContent = '…';
+
+        const r = await API.put('/api/profile/nickname', { nickname: nick });
+
+        if (r.ok) {
+            USER = r.data;
+            localStorage.setItem('currentUser', JSON.stringify(USER));
+            document.getElementById('heroNick').textContent     = USER.nickname;
+            document.getElementById('headerUsername').textContent = USER.nickname;
+            refreshNickCooldown(USER);
+            showToast('Никнейм обновлён ✓', 'success');
+        } else {
+            showToast(r.data.error || 'Ошибка', 'error');
+            refreshNickCooldown(USER || {});
+        }
+
+        btn.textContent = 'Сохранить';
+    }
+
+    document.getElementById('nickInput').addEventListener('keydown', e => { if(e.key==='Enter') saveNickname(); });
+
+    /* ================================================================
+       ADMIN STATS  — GET /api/admin/stats
+    ================================================================ */
     async function loadAdminStats() {
         const r = await API.get('/api/admin/stats');
         if (!r.ok) return;
-        const s = r.data;
-        document.getElementById('adminStats').innerHTML = `
-            <div class="admin-stat"><div class="v">${s.total_users}</div><div class="l">Игроков</div></div>
-            <div class="admin-stat"><div class="v">${s.total_games}</div><div class="l">Игр сыграно</div></div>
-            <div class="admin-stat"><div class="v">${s.total_xp}</div><div class="l">Суммарный XP</div></div>
-        `;
+        document.getElementById('asUsers').textContent = r.data.total_users ?? '—';
+        document.getElementById('asGames').textContent = r.data.total_games ?? '—';
+        document.getElementById('asXP').textContent    = r.data.total_xp   ?? '—';
     }
 
+    /* ── Start ── */
     loadProfile();
     </script>
 </body>
