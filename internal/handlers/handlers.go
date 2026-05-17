@@ -572,19 +572,30 @@ func (h *Handler) AdminStats(w http.ResponseWriter, r *http.Request) {
 	results := h.store.GetGameResults()
 	caseResults := h.store.GetCaseResults()
 	totalXP, totalBalance, totalUsers := 0, 0, 0
+	totalBadges, totalAvatars := 0, 0
+	activeToday := 0
+	today := time.Now().Format("2006-01-02")
 	for _, u := range users {
 		if !u.IsAdmin {
 			totalXP += u.XP
 			totalBalance += u.Balance
 			totalUsers++
+			totalBadges += len(u.Badges)
+			totalAvatars += len(u.Avatars)
+			if u.LastLogin == today || u.DailyTasksDate == today {
+				activeToday++
+			}
 		}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"total_users":  totalUsers,
-		"total_games":  len(results),
-		"total_cases":  len(caseResults),
-		"total_xp":     totalXP,
+		"total_users":   totalUsers,
+		"total_games":   len(results),
+		"total_cases":   len(caseResults),
+		"total_xp":      totalXP,
 		"total_balance": totalBalance,
+		"total_badges":  totalBadges,
+		"total_avatars": totalAvatars,
+		"active_today":  activeToday,
 	})
 }
 
