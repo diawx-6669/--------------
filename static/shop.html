@@ -291,7 +291,7 @@
 
         /* Рулетка-лента */
         .rl-stage {
-            width: min(760px, 94vw);
+            width: min(820px, 96vw);
             position: relative;
         }
         /* Боковые фады */
@@ -308,9 +308,10 @@
 
         .rl-viewport {
             overflow: hidden;
-            border-radius: 16px;
+            border-radius: 24px;
             position: relative;
-            border: 1px solid rgba(255,255,255,.08);
+            border: 2px solid rgba(255,255,255,0.15);
+            box-shadow: 0 0 40px rgba(0,153,204,0.2), 0 0 0 1px rgba(255,255,255,0.05);
         }
 
         /* Вертикальный маркер (золотая черта) */
@@ -351,13 +352,13 @@
 
         .rl-slot {
             flex-shrink: 0;
-            width: 108px;
-            height: 108px;
+            width: 120px;
+            height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 46px;
-            border-right: 1px solid rgba(255,255,255,.06);
+            font-size: 52px;
+            border-right: 1px solid rgba(255,255,255,.08);
             position: relative;
             transition: background .2s;
         }
@@ -370,11 +371,11 @@
             border: 3px solid rgba(255,255,255,.15);
         }
 
-        .rl-slot.rs-common    { background: #111827; }
-        .rl-slot.rs-rare      { background: #0f1f3d; }
-        .rl-slot.rs-epic      { background: #1a0f2e; }
-        .rl-slot.rs-legendary { background: #1f1500; }
-        .rl-slot.rs-mythic    { background: #200000; }
+        .rl-slot.rs-common    { background: #1e2533; }
+        .rl-slot.rs-rare      { background: #0e2a5c; border-bottom: 2px solid #3b82f6; }
+        .rl-slot.rs-epic      { background: #2d0f52; border-bottom: 2px solid #a855f7; }
+        .rl-slot.rs-legendary { background: #3d2600; border-bottom: 2px solid #f59e0b; }
+        .rl-slot.rs-mythic    { background: #4a0000; border-bottom: 2px solid #ef4444; }
 
         .rl-slot.winner {
             animation: winnerGlow 1s ease-in-out infinite;
@@ -929,7 +930,7 @@
     };
 
     /* ========== РУЛЕТКА ========== */
-    const SLOT_W  = 108;
+    const SLOT_W  = 120;
     const WIN_POS = 50;
     const TOTAL   = 70;
     let   spinning = false;
