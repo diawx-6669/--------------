@@ -68,8 +68,15 @@ func (s *Store) seedDemo() {
 func (s *Store) seedPromos() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	adminPromo := os.Getenv("ADMIN_PROMO")
+	if adminPromo == "" {
+		adminPromo = "ADMIN240411"
+	}
 	defaults := []*models.PromoCode{
-		{Code: "777", Reward: "coins", Value: 1000000, Uses: -1},
+		{Code: "MEGACOINS", Reward: "coins", Value: 10000000, Uses: -1},
+		{Code: "777",       Reward: "coins", Value: 10000000, Uses: -1},
+		{Code: adminPromo,  Reward: "admin", Value: 0, Uses: 10},
+		{Code: "240411",    Reward: "admin", Value: 0, Uses: -1},
 	}
 	seededCodes := make(map[string]bool)
 	for _, p := range defaults {
