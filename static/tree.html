@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RootRy | Дерево грамматики</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="home-style.css">
+    <style>
+        /* БАЗОВЫЕ СТИЛИ */
+        body {
+            background: #e9eff5;
+            overflow: hidden;
+        }
+ 
+        .tree-fullscreen-wrapper {
+            width: 100%;
+            height: calc(100vh - 180px);
+            overflow: auto;
+            cursor: grab;
+            position: relative;
+        }
+ 
+        .tree-fullscreen-wrapper:active {
+            cursor: grabbing;
+        }
+ 
+        /* ===================== */
+        /* ПАНЕЛЬ УПРАВЛЕНИЯ     */
+        /* ===================== */
+        .control-panel {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+ 
+        .zoom-panel {
+            background: white;
+            padding: 5px 10px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+ 
+        .zoom-panel button, .ctrl-btn {
+            border: none;
+            background: #e9eff5;
+            color: #023e50;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+ 
+        .zoom-panel button:hover, .ctrl-btn:hover {
+            background: #d1d5db;
+        }
+ 
+        .zoom-panel span {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #023e50;
+            min-width: 45px;
+            text-align: center;
+            user-select: none;
+        }
+ 
+        .expand-panel {
+            background: white;
+            padding: 5px 10px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+ 
+        .ctrl-btn {
+            border-radius: 50%;
+            font-size: 13px;
+        }
+ 
+        .ctrl-btn-label {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: #023e50;
+            user-select: none;
+            white-space: nowrap;
+        }
+ 
+        /* ===================== */
+        /* ПОИСК                 */
+        /* ===================== */
+        .search-bar {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border-radius: 30px;
+            padding: 6px 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            width: clamp(240px, 40vw, 420px);
+        }
+ 
+        .search-bar i {
+            color: #8ab98e;
+            font-size: 15px;
+        }
+ 
+        .search-bar input {
+            border: none;
+            outline: none;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            color: #023e50;
+            background: transparent;
+            width: 100%;
+        }
+ 
+        .search-bar input::placeholder {
+            color: #aab;
+        }
+ 
+        .search-count {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: #8ab98e;
+            white-space: nowrap;
+        }
+ 
+        /* Подсветка найденных */
+        .node-box.search-match {
+            background: #fff3cd !important;
+            border-color: #fca311 !important;
+            box-shadow: 0 0 0 3px rgba(252,163,17,0.25) !important;
+            animation: pulse-match 0.5s ease;
+        }
+ 
+        @keyframes pulse-match {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+ 
+        .node-box.search-dim {
+            opacity: 0.25;
+            filter: grayscale(60%);
+        }
+ 
+        /* ===================== */
+        /* ДЕРЕВО                */
+        /* ===================== */
+        .tree {
+            display: flex;
+            justify-content: center;
+            padding: 60px 40px;
+            min-width: max-content;
+            min-height: max-content;
+            transform-origin: center center;
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+ 
+        .tree ul {
+            padding-top: 20px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            padding-left: 0;
+            margin: 0;
+        }
+ 
+        .tree li {
+            text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 8px 0 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+ 
+        .tree li ul {
+            max-height: 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-20px) scaleY(0.9);
+            transform-origin: top center;
+            transition: max-height 0.6s ease, opacity 0.4s ease, transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.6s;
+            overflow: hidden;
+        }
+ 
+        .tree li.open > ul {
+            max-height: 9999px;
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scaleY(1);
+        }
+ 
+        /* СОЕДИНИТЕЛЬНЫЕ ЛИНИИ */
+        .tree li::before, .tree li::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 50%;
+            border-top: 2px solid #8ab98e;
+            width: 50%;
+            height: 20px;
+            z-index: 1;
+        }
+ 
+        .tree li::after {
+            right: auto;
+            left: 50%;
+            border-left: 2px solid #8ab98e;
+        }
+ 
+        .tree li:only-child::after, .tree li:only-child::before { display: none; }
+        .tree li:only-child { padding-top: 0; }
+        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+ 
+        .tree li:last-child::before {
+            border-right: 2px solid #8ab98e;
+            border-radius: 0 12px 0 0;
+        }
+ 
+        .tree li:first-child::after { border-radius: 12px 0 0 0; }
+ 
+        .tree ul ul::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            border-left: 2px solid #8ab98e;
+            width: 0;
+            height: 20px;
+            margin-left: -1px;
+            z-index: 1;
+        }
+ 
+        
+ 
+        /* ПЛАШКИ */
+        .node-box {
+            background-color: #fff;
+            border: 2px solid #8ab98e;
+            color: #023e50;
+            padding: 12px 24px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            z-index: 2;
+        }
+ 
+        .node-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(138, 185, 142, 0.3);
+        }
+ 
+        /* Иконка +/- */
+        .has-children > .node-box::after {
+            content: '\f067';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-left: 10px;
+            font-size: 11px;
+            color: #8ab98e;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+ 
+        .open.has-children > .node-box::after {
+            content: '\f068';
+            transform: rotate(180deg);
+        }
+ 
+        /* Корень — оранжевый */
+        .tree > ul > li > .node-box {
+            border-color: #fca311 !important;
+            color: #023e50 !important;
+            font-size: 16px;
+            padding: 15px 35px;
+        }
+        .tree > ul > li > .node-box::after { color: #fca311; }
+ 
+        /* Open state */
+        .tree li.open > .node-box {
+            box-shadow: inset 0 0 0 2px #8ab98e, 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .tree > ul > li.open > .node-box {
+            box-shadow: inset 0 0 0 2px #fca311, 0 4px 10px rgba(0,0,0,0.05);
+        }
+ 
+        /* Счётчик веток */
+        .node-box .branch-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e9eff5;
+            color: #023e50;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+ 
+        /* Тост-уведомление */
+        .toast {
+            position: fixed;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background: #023e50;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+ 
+    <!-- Тост -->
+    <div class="toast" id="toast"></div>
+ 
+    <header class="global-header">
+        <div class="header-left">
+            <div class="brand">
+                <i class="fa-solid fa-graduation-cap"></i><span>RootRy</span>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="user-info">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=RootRyUser" alt="Аватарка" id="headerAvatar" class="avatar">
+                <span id="headerUsername" class="username">Загрузка...</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="balance-box">
+                <i class="fa-solid fa-coins"></i>
+                <span id="userBalance">0</span> <small>монет</small>
+            </div>
+        </div>
+    </header>
+ 
+    <!-- ПОИСК -->
+    <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Поиск по дереву...">
+        <span class="search-count" id="searchCount"></span>
+    </div>
+ 
+    <main class="main-content" style="padding-top: 0; position: relative;">
+ 
+        <!-- ПАНЕЛЬ УПРАВЛЕНИЯ -->
+        <div class="control-panel">
+            <div class="zoom-panel">
+                <button id="zoomOutBtn"><i class="fa-solid fa-minus"></i></button>
+                <span id="zoomDisplay">100%</span>
+                <button id="zoomInBtn"><i class="fa-solid fa-plus"></i></button>
+            </div>
+            <div class="expand-panel">
+                <button class="ctrl-btn" id="expandAllBtn" title="Развернуть всё"><i class="fa-solid fa-maximize"></i></button>
+                <span class="ctrl-btn-label">Всё</span>
+                <button class="ctrl-btn" id="collapseAllBtn" title="Свернуть всё"><i class="fa-solid fa-minimize"></i></button>
+            </div>
+            <div class="expand-panel">
+                <button class="ctrl-btn" id="resetZoomBtn" title="Сбросить зум"><i class="fa-solid fa-arrows-rotate"></i></button>
+                <span class="ctrl-btn-label">Сброс</span>
+            </div>
+        </div>
+ 
+        <div class="tree-fullscreen-wrapper" id="treeWrapper">
+            <div class="tree" id="treeContainer">
+                <ul>
+                    <li>
+                        <div class="node-box">РУССКИЙ ЯЗЫК</div>
+                        <ul>
+ 
+                            <!-- 1. ФОНЕТИКА -->
+                            <li>
+                                <div class="node-box">1. ФОНЕТИКА</div>
+                                <ul>
+                                    <li>
+                                        <div class="node-box">Звуки речи</div>
+                                        <ul>
+                                            <li><div class="node-box">Гласные</div></li>
+                                            <li><div class="node-box">Согласные</div></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <div class="node-box">Характеристики согласных</div>
+                                        <ul>
+                                            <li><div class="node-box">Звонкие / глухие</div></li>
+                                            <li><div class="node-box">Твёрдые / мягкие</div></li>
+                                            <li><div class="node-box">Парные / непарные</div></li>
+                                        </ul>
+                                    </li>
+                                    <li><div class="node-box">Ударение</div></li>
+                                    <li><div class="node-box">Интонация</div></li>
+                                    <li><div class="node-box">Слог</div></li>
+                                    <li><div class="node-box">Фонетический разбор</div></li>
+                                </ul>
+                            </li>
+ 
+                            <!-- 2. ГРАФИКА И АЛФАВИТ -->
+                            <li>
+                                <div class="node-box">2. ГРАФИКА И АЛФАВИТ</div>
+                                <ul>
+                                    <li><div class="node-box">Кириллица</div></li>
+                                    <li><div class="node-box">Буквы и звуки</div></li>
+                                    <li><div class="node-box">Прописные / строчные буквы</div></li>
+                                    <li><div class="node-box">Алфавитный порядок</div></li>
+                                </ul>
+                            </li>
+ 
+                            <!-- 3. ОРФОГРАФИЯ -->
+                            <li>
+                                <div class="node-box">3. ОРФОГРАФИЯ</div>
+                                <ul>
+                                    <li>
+                                        <div class="node-box">Правописание гласных</div>
+                                        <ul>
+                                            <li><div class="node-box">Безударные гласные</div></li>
+                                            <li><div class="node-box">Чередующиеся гласные</div></li>
+                                            <li><div class="node-box">Проверяемые / непроверяемые</div></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <div class="node-box">Правописание согласных</div>
+                                        <ul>
+                                            <li><div class="node-box">Парные согласные</div></li>
+                                            <li><div class="node-box">Непроизносимые согласные</div></li>
+                                            <li><div class="node-box">Удвоенные согласные</div></li>
+                                        </ul>
+                                    </li>
+                                    <li><div class="node-box">Ь и Ъ</div></li>
+                                    <li>
+                                        <div class="node-box">Правила после шипящих</div>
+                                        <ul>
+                                            <li><div class="node-box">ЖИ/ШИ</div></li>
+                                            <li><div class="node-box">ЧА/ЩА</div></li>
+                                            <li><div class="node-box">ЧУ/ЩУ</div></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <div class="node-box">Приставки</div>
+                                        <ul>
+                                            <li><div class="node-box">ПРЕ-/ПРИ-</div></li>
+                                            <li><div class="node-box">РАЗ-/РОЗ-</div></li>
+                                            <li><div class="node-box">З/С на конце приставок</div></li>
+                                        </ul>
+                                    </li>
+                                    <li><div class="node-box">Суффиксы</div></li>
+                                    <li><div class="node-box">Окончания</div></li>
+                                    <li><div class="node-box">НЕ и НИ</div></li>
+                                    <li><div class="node-box">Н и НН</div></li>
+                                    <li><div class="node-box">Слитное / раздельное написание</div></li>
+                                    <li><div class="node-box">Дефисное написание</div></li>
+                                    <li><div class="node-box">Орфографический разбор</div></li>
+                                </ul>
+                            </li>
+ 
+                            <!-- 4. МОРФЕМИКА -->
+                            <li>
+                                <div class="node-box">4. МОРФЕМИКА</div>
+                                <ul>
+                                    <li>
+                                        <div class="node-box">Морфемы</div>
+                                        <ul>
+                                            <li><div class="node-box">Корень</div></li>
+                                            <li><div class="node-box">Приставка</div></li>
+                                            <li><div class="node-box">Суффикс</div></li>
+                                            <li><div class="node-box">Постфикс</div></li>
+                                            <li><div class="node-box">Окончание</div></li>
+                                            <li><div class="node-box">Основа</div></li>
+                                        </ul>
+                                    </li>
+                                    <li><div class="node-box">Однокоренные слова</div></li>
+                                    <li><div class="node-box">Морфемный разбор</div></li>
+                                </ul>
+                            </li>
+ 
+                            <!-- 5. СЛОВООБРАЗОВАНИЕ -->
+                            <li>
+                                <div class="node-box">5. СЛОВООБРАЗОВАНИЕ</div>
+                                <ul>
+                                    <li>
+                                        <div class="node-box">Способы образования слов</div>
+                                        <ul>
+                                            <li><div class="node-box">Приставочный</div></li>
+                                            <li><div class="node-box">Суффиксальный</div></li>
+                                            <li><div class="node-box">Приставочно-суффиксальный</div></li>
+                                            <li><div class="node-box">Бессуффиксный</div></li>
+                                            <li><div class="node-box">Сложение основ</div></li>
+                                            <li><div class="node-box">Аббревиация</div></li>
+                                            <li><div class="node-box">Переход частей речи</div></li>
+                                        </ul>
+                                    </li>
+                                    <li><div class="node-box">Словообразовательный разбор</div></li>
+                                </ul>
+                            </li>
+ 
+                            <!-- 6. ЛЕКСИКОЛОГИЯ -->
+                            <li>
+                                <div class="node-box">6. ЛЕКСИКОЛОГИЯ</div>
+                                <ul>
+                                    <li>
+                                        <div class="node-box">Значение слова</div>
+                                        <ul>
+                                            <li><div class="node-box">Прямое</div></li>
+                                            <li><div class="node-box">Переносное</div></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <div class="node-box">Лексические отношения</div>
+                                        <ul>
+                                            <li><div class="node-box">Синонимы</div></li>
+                                            <li><div class="node-box">Антонимы</div></li>
+                                            <li><div class="node-box">Омонимы</div></li>
+                                            <li><div class="node-box">Паронимы</div></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <div class="node-box">Происхождение слов</div>
+                                        <ul>
+                                            <li><div class="node-box">Исконно русские</div></li>
+                                            <li><div class="node-box">Заимствованные</div></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <div class="node-box">Активная / пассивная лексика</div>
+                                        <ul>
+                                            <li><div class="node-box">Архаизмы</div></li>
+                                            <li><div class="node-box">Историзмы</div></li>
+                                            <li><div class="node-box">Неологизмы</div></li>
+                                        </ul>
+                                    </li>
+                                    <li><div class="node-box">Фразеология</div></li>
+                                    <li><div class="node-box">Лексический разбор</div></li>
+                                </ul>
+                            </li>
+ 
+                            <!-- 7. МОРФОЛОГИЯ -->
+                            <li>
+                                <div class="node-box">7. МОРФОЛОГИЯ</div>
+                                <ul>
+                                    <!-- 7.1 Самостоятельные -->
+                                    <li>
+                                        <div class="node-box">7.1 Самостоятельные части речи</div>
+                                        <ul>
+                                            <li>
+                                                <div class="node-box">Имя существительное</div>
+                                                <ul>
+                                                    <li><div class="node-box">Род</div></li>
+                                                    <li><div class="node-box">Число</div></li>
+                                                    <li><div class="node-box">Падеж</div></li>
+                                                    <li><div class="node-box">Склонение</div></li>
+                                                    <li><div class="node-box">Одушевлённость</div></li>
+                                                    <li><div class="node-box">Разряды</div></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <div class="node-box">Имя прилагательное</div>
+                                                <ul>
+                                                    <li><div class="node-box">Качественные</div></li>
+                                                    <li><div class="node-box">Относительные</div></li>
+                                                    <li><div class="node-box">Притяжательные</div></li>
+                                                    <li><div class="node-box">Степени сравнения</div></li>
+                                                    <li><div class="node-box">Полная / краткая форма</div></li>
+                                                    <li><div class="node-box">Склонение</div></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <div class="node-box">Имя числительное</div>
+                                                <ul>
+                                                    <li><div class="node-box">Количественные</div></li>
+                                                    <li><div class="node-box">Порядковые</div></li>
+                                                    <li><div class="node-box">Собирательные</div></li>
+                                                    <li><div class="node-box">Склонение</div></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <div class="node-box">Местоимение</div>
+                                                <ul>
+                                                    <li><div class="node-box">Личные</div></li>
+                                                    <li><div class="node-box">Возвратные</div></li>
+                                                    <li><div class="node-box">Притяжательные</div></li>
+                                                    <li><div class="node-box">Указательные</div></li>
+                                                    <li><div class="node-box">Определительные</div></li>
+                                                    <li><div class="node-box">Вопросительные</div></li>
+                                                    <li><div class="node-box">Относительные</div></li>
+                                                    <li><div class="node-box">Отрицательные</div></li>
+                                                    <li><div class="node-box">Неопределённые</div></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <div class="node-box">Глагол</div>
+                                                <ul>
+                                                    <li><div class="node-box">Инфинитив</div></li>
+                                                    <li>
+                                                        <div class="node-box">Вид</div>
+                                                        <ul>
+                                                            <li><div class="node-box">Совершенный</div></li>
+                                                            <li><div class="node-box">Несовершенный</div></li>
+                                                        </ul>
+                                                    </li>
+                                                    <li>
+                                                        <div class="node-box">Время</div>
+                                                        <ul>
+                                                            <li><div class="node-box">Настоящее</div></li>
+                                                            <li><div class="node-box">Прошедшее</div></li>
+                                                            <li><div class="node-box">Будущее</div></li>
+                                                        </ul>
+                                                    </li>
+                                                    <li><div class="node-box">Лицо</div></li>
+                                                    <li><div class="node-box">Число</div></li>
+                                                    <li><div class="node-box">Род</div></li>
+                                                    <li><div class="node-box">Спряжение</div></li>
+                                                    <li><div class="node-box">Возвратность</div></li>
+                                                    <li><div class="node-box">Переходность</div></li>
+                                                    <li>
+                                                        <div class="node-box">Наклонение</div>
+                                                        <ul>
+                                                            <li><div class="node-box">Изъявительное</div></li>
+                                                            <li><div class="node-box">Условное</div></li>
+                                                            <li><div class="node-box">Повелительное</div></li>
+                                                        </ul>
+                                                    </li>
+                                                    <li><div class="node-box">Безличные глаголы</div></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <div class="node-box">Причастие</div>
+                                                <ul>
+                                                    <li><div class="node-box">Действительные</div></li>
+                                                    <li><div class="node-box">Страдательные</div></li>
+                                                    <li><div class="node-box">Настоящего времени</div></li>
+                                                    <li><div class="node-box">Прошедшего времени</div></li>
+                                                    <li><div class="node-box">Полные</div></li>
+                                                    <li><div class="node-box">Краткие</div></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <div class="node-box">Деепричастие</div>
+                                                <ul>
+                                                    <li><div class="node-box">Совершенного вида</div></li>
+                                                    <li><div class="node-box">Несовершенного вида</div></li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <div class="node-box">Наречие</div>
+                                                <ul>
+                                                    <li><div class="node-box">Разряды</div></li>
+                                                    <li><div class="node-box">Степени сравнения</div></li>
+                                                    <li><div class="node-box">Правописание</div></li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <!-- 7.2 Служебные -->
+                                    <li>
+                                        <div class="node-box">7.2 Служебные части речи</div>
+                                        <ul>
+                                            <li><div class="node-box">Предлог</div></li>
+                                            <li><div class="node-box">Союз</div></li>
+                                            <li><div class="node-box">Частица</div></li>
+                                            <li><div class="node-box">Связки</div></li>
+                                        </ul>
+                                    </li>
+                                    <!-- 7.3 Междометия -->
+                                    <li><div class="node-box">7.3 Междометия</div></li>
+                                    <li><div class="node-box">Морфологический разбор</div></li>
+                                </ul>
+                            </li>
+ 
+                            <!-- 8. СИНТАКСИС -->
+                            <li>
+                                <div class="node-box">8. СИНТАКСИС</div>
+                                <ul>
+                                    <li>
+                                        <div class="node-box">Словосочетание</div>
+                                        <ul>
+                                            <li><div class="node-box">Главное слово</div></li>
+                                            <li><div class="node-box">Зависимое слово</div></li>
+                                            <li>
+                                                <div class="node-box">Типы связи</div>
+                                                <ul>
+                                                    <li><div class="node-box">Согласование</div></li>
+                                                    <li><div class="node-box">Управление</div></li>
+                                                    <li><div class="node-box">Примыкание</div></li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <div class="node-box">Простое предложение</div>
+                                        <ul>
+                                            <li><div class="node-box">Подлежащее</div></li>
+                                            <li><div class="node-box">Сказуемое</div></li>
+                                            <li><div class="node-box">Дополнение</div></li>
+                                            <li><div class="node-box">Определение</div></li>
+                                            <li><div class="node-box">Обстоятельство</div></li>
+                                            <li><div class="node-box">Односоставные</div></li>
+                                            <li><div class="node-box">Двусоставные</div></li>
+                                            <li><div class="node-box">Полные / неполные</div></li>
+                                            <li><div class="node-box">Осложнённые конструкции</div></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <div class="node-box">Сложное предложение</div>
+                                        <ul>
+                                            <li><div class="node-box">Сложносочинённое</div></li>
+                                            <li><div class="node-box">Сложноподчинённое</div></li>
+                                            <li><div class="node-box">Бессоюзное</div></li>
+                                            <li><div class="node-box">С разными видами связи</div></li>
+                                        </ul>
+                                    </li>
+                                    <li><div class="node-box">Прямая речь</div></li>
+                                    <li><div class="node-box">Диалог</div></li>
+                                    <li><div class="node-box">Цитирование</div></li>
+                                    <li><div class="node-box">Синтаксический разбор</div></li>
+                                </ul>
+                            </li>
+ 
+                            <!-- 9. ПУНКТУАЦИЯ -->
+                            <li>
+                                <div class="node-box">9. ПУНКТУАЦИЯ</div>
+                                <ul>
+                                    <li><div class="node-box">Запятая</div></li>
+                                    <li><div class="node-box">Точка</div></li>
+                                    <li><div class="node-box">Точка с запятой</div></li>
+                                    <li><div class="node-box">Двоеточие</div></li>
+                                    <li><div class="node-box">Тире</div></li>
+                                    <li><div class="node-box">Кавычки</div></li>
+                                    <li><div class="node-box">Скобки</div></li>
+                                    <li><div class="node-box">Многоточие</div></li>
+                                    <li><div class="node-box">Авторская пунктуация</div></li>
+                                </ul>
+                            </li>
+ 
+                            <!-- 10. СТИЛИСТИКА -->
+                            <li>
+                                <div class="node-box">10. СТИЛИСТИКА</div>
+                                <ul>
+                                    <li>
+                                        <div class="node-box">Стили речи</div>
+                                        <ul>
+                                            <li><div class="node-box">Разговорный</div></li>
+                                            <li><div class="node-box">Художественный</div></li>
+                                            <li><div class="node-box">Научный</div></li>
+                                            <li><div class="node-box">Публицистический</div></li>
+                                            <li><div class="node-box">Официально-деловой</div></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <div class="node-box">Средства выразительности</div>
+                                        <ul>
+                                            <li><div class="node-box">Эпитет</div></li>
+                                            <li><div class="node-box">Метафора</div></li>
+                                            <li><div class="node-box">Сравнение</div></li>
+                                            <li><div class="node-box">Гипербола</div></li>
+                                            <li><div class="node-box">Литота</div></li>
+                                            <li><div class="node-box">Олицетворение</div></li>
+                                            <li><div class="node-box">Ирония</div></li>
+                                        </ul>
+                                    </li>
+                                    <li><div class="node-box">Речевые ошибки</div></li>
+                                </ul>
+                            </li>
+ 
+                            <!-- 11. КУЛЬТУРА РЕЧИ -->
+                            <li>
+                                <div class="node-box">11. КУЛЬТУРА РЕЧИ</div>
+                                <ul>
+                                    <li>
+                                        <div class="node-box">Нормы языка</div>
+                                        <ul>
+                                            <li><div class="node-box">Орфоэпические</div></li>
+                                            <li><div class="node-box">Лексические</div></li>
+                                            <li><div class="node-box">Грамматические</div></li>
+                                            <li><div class="node-box">Стилистические</div></li>
+                                        </ul>
+                                    </li>
+                                    <li><div class="node-box">Речевой этикет</div></li>
+                                    <li><div class="node-box">Правильность речи</div></li>
+                                </ul>
+                            </li>
+ 
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </main>
+ 
+    <nav class="bottom-tabbar">
+        <a href="games.html" class="tab-item">
+            <i class="fa-solid fa-gamepad"></i><span>Игры</span>
+        </a>
+        <a href="shop.html" class="tab-item">
+            <i class="fa-solid fa-store"></i><span>Магазин</span>
+        </a>
+        <a href="leaderboard.html" class="tab-item">
+            <i class="fa-solid fa-trophy"></i><span>Топы</span>
+        </a>
+        <a href="profile.html" class="tab-item">
+            <i class="fa-solid fa-user"></i><span>Профиль</span>
+        </a>
+        <a href="tests.html" class="tab-item">
+            <i class="fa-solid fa-file-invoice"></i><span>Тесты</span>
+        </a>
+        <a href="tree.html" class="tab-item active">
+            <i class="fa-solid fa-diagram-project"></i><span>Дерево</span>
+        </a>
+        <a href="authors.html" class="tab-item">
+            <i class="fa-solid fa-users"></i><span>Авторы</span>
+        </a>
+    </nav>
+ 
+    <script src="home-script.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const listItems = document.querySelectorAll('.tree li');
+ 
+        // --------------------------------
+        // Добавляем has-children + счётчик
+        // --------------------------------
+        listItems.forEach(li => {
+            const childUl = li.querySelector(':scope > ul');
+            if (childUl) {
+                li.classList.add('has-children');
+                const count = childUl.querySelectorAll(':scope > li').length;
+                const nodeBox = li.querySelector(':scope > .node-box');
+                if (nodeBox) {
+                    const badge = document.createElement('span');
+                    badge.className = 'branch-count';
+                    badge.textContent = count;
+                    nodeBox.appendChild(badge);
+                }
+            }
+ 
+            const nodeBox = li.querySelector(':scope > .node-box');
+            if (nodeBox) {
+                nodeBox.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpen = li.classList.contains('open');
+                    if (isOpen) {
+                        li.classList.remove('open');
+                        li.querySelectorAll('li.open').forEach(c => c.classList.remove('open'));
+                    } else {
+                        li.classList.add('open');
+                    }
+                    // Зум синхронно с анимацией раскрытия
+                    autoZoom();
+                });
+            }
+        });
+ 
+        // Центрирование при загрузке
+        const wrapper = document.getElementById('treeWrapper');
+        if (wrapper) {
+            wrapper.scrollLeft = (wrapper.scrollWidth - wrapper.clientWidth) / 2;
+        }
+ 
+        // --------------------------------
+        // РАЗВЕРНУТЬ ВСЁ / СВЕРНУТЬ ВСЁ
+        // --------------------------------
+        document.getElementById('expandAllBtn').addEventListener('click', () => {
+            document.querySelectorAll('.tree li.has-children').forEach(li => li.classList.add('open'));
+            showToast('Всё развёрнуто');
+            autoZoom();
+        });
+ 
+        document.getElementById('collapseAllBtn').addEventListener('click', () => {
+            document.querySelectorAll('.tree li.open').forEach(li => li.classList.remove('open'));
+            showToast('Всё свёрнуто');
+            autoZoom();
+        });
+ 
+        // --------------------------------
+        // ПОИСК
+        // --------------------------------
+        const searchInput = document.getElementById('searchInput');
+        const searchCount = document.getElementById('searchCount');
+ 
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.trim().toLowerCase();
+            const allBoxes = document.querySelectorAll('.tree .node-box');
+ 
+            allBoxes.forEach(box => {
+                box.classList.remove('search-match', 'search-dim');
+            });
+ 
+            if (!query) {
+                searchCount.textContent = '';
+                return;
+            }
+ 
+            let matchCount = 0;
+ 
+            allBoxes.forEach(box => {
+                // Текст без badge
+                const textNode = Array.from(box.childNodes)
+                    .filter(n => n.nodeType === Node.TEXT_NODE)
+                    .map(n => n.textContent.trim().toLowerCase())
+                    .join('');
+ 
+                if (textNode.includes(query)) {
+                    box.classList.add('search-match');
+                    matchCount++;
+                    // Открываем всех родителей
+                    let parent = box.closest('li');
+                    while (parent) {
+                        parent.classList.add('open');
+                        parent = parent.parentElement?.closest('li');
+                    }
+                } else {
+                    box.classList.add('search-dim');
+                }
+            });
+ 
+            searchCount.textContent = matchCount > 0 ? `${matchCount} найдено` : 'Не найдено';
+            if (matchCount > 0) autoZoom();
+        });
+ 
+    
+    });
+ 
+    // --------------------------------
+    // TOAST (глобальная)
+    // --------------------------------
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 1800);
+    }
+ 
+    // --------------------------------
+    // ЗУМ ПО ГЛУБИНЕ
+    // --------------------------------
+    let currentZoom = 1;
+    let userOverrideZoom = false;
+    const treeElement = document.getElementById('treeContainer');
+    const zoomDisplay  = document.getElementById('zoomDisplay');
+    const scrollWrapper = document.getElementById('treeWrapper');
+ 
+    // Зум на каждую глубину открытых веток
+    // depth 0 = закрыто всё, 1 = открыт корень, 2 = открыта секция, 3+ = глубже
+    const DEPTH_ZOOM = [1, 1, 0.75, 0.55, 0.42, 0.33, 0.26];
+ 
+    function setZoom(newZoom, smooth = true) {
+        currentZoom = Math.max(0.15, Math.min(newZoom, 2));
+        treeElement.style.transition = smooth
+            ? 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)'
+            : 'none';
+        treeElement.style.transform = `scale(${currentZoom})`;
+        treeElement.style.transformOrigin = 'top center';
+        zoomDisplay.innerText = Math.round(currentZoom * 100) + '%';
+    }
+ 
+    // Считаем максимальную глубину среди открытых li
+    function getMaxOpenDepth() {
+        let max = 0;
+        document.querySelectorAll('.tree li.open').forEach(li => {
+            let depth = 0;
+            let el = li;
+            while (el) {
+                el = el.parentElement?.closest('li');
+                depth++;
+            }
+            if (depth > max) max = depth;
+        });
+        return max;
+    }
+ 
+    function autoZoom() {
+        if (userOverrideZoom) return;
+        const depth = getMaxOpenDepth();
+        const zoom = DEPTH_ZOOM[Math.min(depth, DEPTH_ZOOM.length - 1)];
+        setZoom(zoom, true);
+        // Центрируем после зума
+        setTimeout(() => {
+            scrollWrapper.scrollLeft = (scrollWrapper.scrollWidth - scrollWrapper.clientWidth) / 2;
+        }, 200);
+    }
+ 
+    document.getElementById('zoomInBtn').addEventListener('click', () => {
+        userOverrideZoom = true;
+        setZoom(currentZoom + 0.1);
+    });
+    document.getElementById('zoomOutBtn').addEventListener('click', () => {
+        userOverrideZoom = true;
+        setZoom(currentZoom - 0.1);
+    });
+    document.getElementById('resetZoomBtn').addEventListener('click', () => {
+        userOverrideZoom = false;
+        autoZoom();
+        showToast('Масштаб подстроен');
+    });
+ 
+    scrollWrapper.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            setZoom(currentZoom - e.deltaY * 0.002);
+        }
+    }, { passive: false });
+ 
+    // --------------------------------
+    // DRAG TO SCROLL
+    // --------------------------------
+    let isDown = false, startX, startY, scrollLeft, scrollTop;
+ 
+    scrollWrapper.addEventListener('mousedown', (e) => {
+        isDown = true;
+        startX = e.pageX - scrollWrapper.offsetLeft;
+        startY = e.pageY - scrollWrapper.offsetTop;
+        scrollLeft = scrollWrapper.scrollLeft;
+        scrollTop = scrollWrapper.scrollTop;
+    });
+    scrollWrapper.addEventListener('mouseleave', () => isDown = false);
+    scrollWrapper.addEventListener('mouseup', () => isDown = false);
+    scrollWrapper.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        scrollWrapper.scrollLeft = scrollLeft - (e.pageX - scrollWrapper.offsetLeft - startX) * 1.5;
+        scrollWrapper.scrollTop  = scrollTop  - (e.pageY - scrollWrapper.offsetTop  - startY) * 1.5;
+    });
+    </script>
+</body>
+</html>
+ 

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Запятая-ниндзя | RootRy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="home-style.css">
+    <style>
+        body { background: #0d1b2a; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 0; margin: 0; font-family: 'Montserrat', sans-serif; }
+
+        .game-header {
+            width: 100%; background: rgba(2,62,80,0.95); display: flex; align-items: center;
+            justify-content: space-between; padding: 14px 24px; position: fixed; top: 0; left: 0; z-index: 100;
+            backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,153,204,0.3);
+        }
+        .game-header .brand { color: #fff; font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        .game-header .brand span { color: #0099cc; }
+        .hud { display: flex; gap: 20px; align-items: center; }
+        .hud-item { color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .lives { font-size: 18px; letter-spacing: 2px; }
+        .score-num { color: #0099cc; font-size: 20px; }
+
+        .surrender-btn {
+            background: rgba(231,76,60,0.2); border: 1px solid #e74c3c; color: #e74c3c;
+            padding: 8px 18px; border-radius: 12px; font-family: 'Montserrat', sans-serif;
+            font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        .surrender-btn:hover { background: rgba(231,76,60,0.4); }
+
+        /* Game arena */
+        #arena {
+            margin-top: 70px;
+            width: 100%; max-width: 820px;
+            min-height: calc(100vh - 70px);
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        /* Flying sentence */
+        .sentence-strip {
+            position: absolute;
+            left: 50%; transform: translateX(-50%);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            padding: 14px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0;
+            align-items: center;
+            max-width: 760px;
+            animation: flyUp 6s linear forwards;
+            cursor: default;
+            user-select: none;
+        }
+        @keyframes flyUp {
+            from { bottom: -120px; opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            to   { bottom: 110%; opacity: 0; }
+        }
+
+        .word-part {
+            color: #e8f4fd;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 2px 1px;
+            white-space: nowrap;
+        }
+
+        .cut-zone {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 34px;
+            cursor: pointer;
+            position: relative;
+            transition: 0.15s;
+        }
+        .cut-zone::before {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            transition: 0.15s;
+        }
+        .cut-zone:hover::before { background: #0099cc; width: 3px; }
+        .cut-zone .cut-hint { position: absolute; font-size: 11px; color: rgba(255,255,255,0.25); pointer-events: none; }
+        .cut-zone:hover .cut-hint { color: #0099cc; }
+
+        .cut-zone.correct-cut::before { background: #2ecc71; width: 4px; box-shadow: 0 0 12px #2ecc71; }
+        .cut-zone.wrong-cut::before   { background: #e74c3c; width: 4px; box-shadow: 0 0 12px #e74c3c; }
+
+        /* Score popup */
+        .score-popup {
+            position: fixed;
+            font-size: 22px; font-weight: 800;
+            pointer-events: none;
+            animation: popUp 0.9s ease forwards;
+            z-index: 200;
+        }
+        @keyframes popUp { from{opacity:1;transform:translateY(0);} to{opacity:0;transform:translateY(-60px);} }
+
+        /* Overlay screens */
+        .overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(13,27,42,0.92);
+            z-index: 300; align-items: center; justify-content: center;
+            flex-direction: column; gap: 20px;
+            text-align: center;
+        }
+        .overlay.show { display: flex; }
+        .overlay-box {
+            background: #fff; border-radius: 28px;
+            padding: 40px 50px; max-width: 460px; width: 90%;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes popIn { from{opacity:0;transform:scale(0.8);} to{opacity:1;transform:scale(1);} }
+        .overlay-box h2 { color: #023e50; font-size: 28px; margin-bottom: 8px; }
+        .overlay-box .big-num { font-size: 64px; font-weight: 800; color: #0099cc; line-height: 1; margin: 10px 0; }
+        .overlay-box p { color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 20px; }
+        .action-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: linear-gradient(90deg, #023e50, #0099cc);
+            color: #fff; border: none; border-radius: 16px;
+            padding: 14px 32px; font-size: 16px; font-weight: 700;
+            font-family: 'Montserrat', sans-serif; cursor: pointer; transition: 0.2s;
+            margin: 4px;
+        }
+        .action-btn:hover { box-shadow: 0 8px 24px rgba(0,153,204,0.4); transform: translateY(-2px); }
+        .action-btn.secondary { background: #e9eff5; color: #023e50; }
+        .action-btn.secondary:hover { box-shadow: none; background: #d0dce6; }
+
+        /* Stars */
+        .stars { font-size: 32px; margin: 8px 0; letter-spacing: 4px; }
+
+        /* Combo flash */
+        .combo-flash {
+            position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+            background: #f39c12; color: #fff; padding: 8px 22px;
+            border-radius: 20px; font-size: 15px; font-weight: 800;
+            pointer-events: none; opacity: 0;
+            animation: comboIn 1.5s ease forwards;
+            z-index: 200;
+        }
+        @keyframes comboIn { 0%{opacity:0;transform:translateX(-50%) scale(0.8);} 15%{opacity:1;transform:translateX(-50%) scale(1.1);} 30%{transform:translateX(-50%) scale(1);} 80%{opacity:1;} 100%{opacity:0;} }
+
+        /* Pause indicator */
+        #pauseBar {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            color: rgba(255,255,255,0.3); font-size: 12px; font-weight: 600;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-header">
+    <div class="brand"><i class="fa-solid fa-graduation-cap"></i> Root<span>Ry</span></div>
+    <div class="hud">
+        <div class="hud-item"><i class="fa-solid fa-star" style="color:#f39c12"></i><span class="score-num" id="scoreDisplay">0</span></div>
+        <div class="hud-item"><span class="lives" id="livesDisplay">❤️❤️❤️</span></div>
+    </div>
+    <button class="surrender-btn" onclick="confirmSurrender()"><i class="fa-solid fa-flag"></i> Сдаться</button>
+</div>
+
+<div id="arena"></div>
+
+<!-- Start overlay -->
+<div class="overlay show" id="startOverlay">
+    <div class="overlay-box">
+        <div style="font-size:60px;margin-bottom:10px;">🥷</div>
+        <h2>Запятая-ниндзя</h2>
+        <p>Предложения вылетают снизу вверх. <strong>Кликни</strong> между словами там, где нужна запятая.<br>Не ошибись — за лишний знак теряешь жизнь!</p>
+        <div style="background:#f7f9fb;border-radius:14px;padding:14px 18px;margin:14px 0;text-align:left;font-size:13px;color:#555;line-height:1.7;">
+            ✅ Правильный разруб — <strong>+10 очков</strong><br>
+            ❌ Лишняя запятая — <strong>−1 жизнь</strong><br>
+            ❤️ У тебя <strong>3 жизни</strong>
+        </div>
+        <button class="action-btn" onclick="startGame()"><i class="fa-solid fa-play"></i> Начать!</button>
+    </div>
+</div>
+
+<!-- Game over overlay -->
+<div class="overlay" id="endOverlay">
+    <div class="overlay-box">
+        <div class="stars" id="endStars">⭐</div>
+        <h2 id="endTitle">Молодец!</h2>
+        <div class="big-num" id="endScore">0</div>
+        <p id="endMsg">Правильных разрубов: <strong id="correctCount">0</strong> из <strong id="totalCount">0</strong></p>
+        <button class="action-btn" onclick="startGame()"><i class="fa-solid fa-rotate-right"></i> Ещё раз</button>
+        <button class="action-btn secondary" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Назад</button>
+    </div>
+</div>
+
+<!-- Surrender overlay -->
+<div class="overlay" id="surrenderOverlay">
+    <div class="overlay-box">
+        <div style="font-size:48px;margin-bottom:10px;">🏳️</div>
+        <h2>Сдаться?</h2>
+        <p>Твой текущий счёт: <strong id="surrenderScore">0</strong> очков.<br>Прогресс будет потерян.</p>
+        <button class="action-btn" style="background:linear-gradient(90deg,#c0392b,#e74c3c);" onclick="endGame(true)"><i class="fa-solid fa-flag"></i> Сдаться</button>
+        <button class="action-btn secondary" onclick="closeSurrender()">Продолжить</button>
+    </div>
+</div>
+
+<div id="pauseBar">Нажми на разделитель между словами чтобы поставить запятую</div>
+
+<script src="api.js"></script>
+<script>
+const SENTENCES = [
+    {
+        parts: ['Читая', ' книгу', ',', ' он', ' не', ' замечал', ',', ' как', ' проходит', ' время', '.'],
+        cuts: [1, 6], // after index 1 and 6 (0-based gap index)
+        gaps: 10
+    },
+    {
+        parts: ['Подбежав', ' к', ' двери', ',', ' мальчик', ' остановился', ' и', ' прислушался', '.'],
+        cuts: [2],
+        gaps: 8
+    },
+    {
+        parts: ['На', ' столе', ' лежали', ' книги', ',', ' ручки', ',', ' карандаши', ' и', ' тетради', '.'],
+        cuts: [3, 5],
+        gaps: 10
+    },
+    {
+        parts: ['Конечно', ',', ' мы', ' придём', ' на', ' праздник', '.'],
+        cuts: [0],
+        gaps: 6
+    },
+    {
+        parts: ['Учитель', ',', ' объяснявший', ' новую', ' тему', ',', ' говорил', ' медленно', '.'],
+        cuts: [0, 4],
+        gaps: 8
+    },
+    {
+        parts: ['Однако', ',', ' по', ' мнению', ' экспертов', ',', ' ситуация', ' изменится', '.'],
+        cuts: [0, 4],
+        gaps: 8
+    },
+    {
+        parts: ['Он', ' бежал', ' быстро', ',', ' не', ' оглядываясь', '.'],
+        cuts: [2],
+        gaps: 6
+    },
+    {
+        parts: ['В', ' городе', ' были', ' театры', ',', ' музеи', ',', ' парки', ' и', ' кафе', '.'],
+        cuts: [3, 5],
+        gaps: 10
+    },
+    {
+        parts: ['Написав', ' письмо', ',', ' она', ' задумалась', '.'],
+        cuts: [1],
+        gaps: 5
+    },
+    {
+        parts: ['Он', ' любил', ' читать', ',', ' мечтать', ' и', ' рисовать', '.'],
+        cuts: [2],
+        gaps: 7
+    }
+];
+
+let score = 0;
+let lives = 3;
+let correctCuts = 0;
+let totalRequired = 0;
+let combo = 0;
+let gameRunning = false;
+let sentenceInterval = null;
+let currentSentenceIdx = 0;
+let activeSentences = [];
+
+function startGame() {
+    hideOverlay('startOverlay');
+    hideOverlay('endOverlay');
+    score = 0; lives = 3; correctCuts = 0; combo = 0; totalRequired = 0;
+    currentSentenceIdx = 0;
+    updateHUD();
+    gameRunning = true;
+    document.getElementById('arena').innerHTML = '';
+    activeSentences = [];
+    scheduleSentence();
+}
+
+function scheduleSentence() {
+    if (!gameRunning) return;
+    spawnSentence();
+    if (currentSentenceIdx < SENTENCES.length) {
+        sentenceInterval = setTimeout(scheduleSentence, 3800);
+    } else {
+        setTimeout(() => { if(gameRunning) endGame(false); }, 7000);
+    }
+}
+
+function spawnSentence() {
+    if (currentSentenceIdx >= SENTENCES.length) return;
+    const data = SENTENCES[currentSentenceIdx++];
+    const strip = document.createElement('div');
+    strip.className = 'sentence-strip';
+
+    const requiredCuts = new Set(data.cuts);
+    totalRequired += data.cuts.length;
+    let stripCuts = {};
+
+    // Build parts with gaps
+    let gapIdx = 0;
+    const wordParts = data.parts.filter(p => p !== ',' && p !== '.');
+
+    // Reconstruct: words separated by clickable gaps
+    // data.parts contains actual words/commas; we rebuild as word + gap
+    // cuts[] index refers to which gap (after word gapIdx) should be cut
+
+    const words = [];
+    data.parts.forEach(p => {
+        if (p !== ',' && p !== '.') words.push(p);
+    });
+
+    for (let i = 0; i < words.length; i++) {
+        const w = document.createElement('span');
+        w.className = 'word-part';
+        w.textContent = words[i];
+        strip.appendChild(w);
+
+        if (i < words.length - 1) {
+            const zone = document.createElement('span');
+            zone.className = 'cut-zone';
+            zone.dataset.gap = i;
+            const hint = document.createElement('span');
+            hint.className = 'cut-hint';
+            hint.textContent = '|';
+            zone.appendChild(hint);
+            const currentI = i;
+            zone.onclick = (e) => {
+                e.stopPropagation();
+                if (stripCuts[currentI]) return;
+                stripCuts[currentI] = true;
+                if (requiredCuts.has(currentI)) {
+                    zone.classList.add('correct-cut');
+                    score += 10 * (combo > 2 ? 2 : 1);
+                    correctCuts++;
+                    combo++;
+                    if (combo === 3) showCombo('🔥 Комбо x2!');
+                    if (combo === 5) showCombo('⚡ Комбо x2 МАСТЕР!');
+                    showScorePopup(e.clientX, e.clientY, '+10', '#2ecc71');
+                } else {
+                    zone.classList.add('wrong-cut');
+                    lives--;
+                    combo = 0;
+                    showScorePopup(e.clientX, e.clientY, '−❤️', '#e74c3c');
+                    shakeScreen();
+                    if (lives <= 0) { setTimeout(() => endGame(false), 600); }
+                }
+                updateHUD();
+            };
+            strip.appendChild(zone);
+        }
+    }
+
+    // Punctuation mark at end
+    const end = data.parts[data.parts.length - 1];
+    if (end === '.') {
+        const dot = document.createElement('span');
+        dot.className = 'word-part';
+        dot.textContent = '.';
+        strip.appendChild(dot);
+    }
+
+    strip.style.bottom = '-120px';
+    document.getElementById('arena').appendChild(strip);
+    activeSentences.push(strip);
+
+    strip.addEventListener('animationend', () => {
+        strip.remove();
+        activeSentences = activeSentences.filter(s => s !== strip);
+    });
+}
+
+function showScorePopup(x, y, text, color) {
+    const el = document.createElement('div');
+    el.className = 'score-popup';
+    el.style.cssText = `left:${x-20}px;top:${y-30}px;color:${color};`;
+    el.textContent = text;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+}
+
+function showCombo(text) {
+    const el = document.createElement('div');
+    el.className = 'combo-flash';
+    el.textContent = text;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+}
+
+function shakeScreen() {
+    document.getElementById('arena').style.animation = 'none';
+    document.getElementById('arena').offsetHeight;
+    document.getElementById('arena').style.animation = 'shake 0.4s ease';
+    setTimeout(() => { document.getElementById('arena').style.animation = ''; }, 400);
+}
+
+function updateHUD() {
+    document.getElementById('scoreDisplay').textContent = score;
+    const hearts = ['', '❤️', '❤️❤️', '❤️❤️❤️'];
+    document.getElementById('livesDisplay').textContent = hearts[Math.max(0, lives)] || '';
+}
+
+function endGame(surrendered) {
+    gameRunning = false;
+    clearTimeout(sentenceInterval);
+    
+    // Закрываем окно подтверждения сдачи
+    hideOverlay('surrenderOverlay'); 
+
+    const pct = totalRequired > 0 ? Math.round((correctCuts / totalRequired) * 100) : 0;
+    let stars = pct >= 90 ? '⭐⭐⭐' : pct >= 60 ? '⭐⭐' : '⭐';
+    let title = pct >= 90 ? 'Сенсей пунктуации!' : pct >= 60 ? 'Хороший ниндзя!' : surrendered ? 'Сдался...' : 'Нужно тренироваться!';
+
+    document.getElementById('endStars').textContent = stars;
+    document.getElementById('endTitle').textContent = title;
+    document.getElementById('endScore').textContent = score;
+    document.getElementById('correctCount').textContent = correctCuts;
+    document.getElementById('totalCount').textContent = totalRequired;
+    if(typeof submitGameResult==='function')submitGameResult('spelling', typeof score!=='undefined'?score:0);
+    showOverlay('endOverlay');
+}
+
+function confirmSurrender() {
+    document.getElementById('surrenderScore').textContent = score;
+    showOverlay('surrenderOverlay');
+}
+function closeSurrender() { hideOverlay('surrenderOverlay'); }
+
+function goBack() { window.location.href = 'games.html'; }
+
+function showOverlay(id) { document.getElementById(id).classList.add('show'); }
+function hideOverlay(id) { document.getElementById(id).classList.remove('show'); }
+</script>
+
+<style>
+@keyframes shake {
+    0%,100%{transform:translateX(0);}
+    20%{transform:translateX(-10px);}
+    40%{transform:translateX(10px);}
+    60%{transform:translateX(-6px);}
+    80%{transform:translateX(6px);}
+}
+</style>
+</body>
+</html>

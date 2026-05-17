@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RootRy | Профиль</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 512'%3E%3Cpath fill='%230099cc' d='M622.3 162.4l-296-120c-16.5-6.7-35.1-6.7-51.6 0l-296 120c-17.2 7-20.1 29.5-4.8 39.4l112 72.3c2.4 1.5 5.2 2.3 8 2.3H504c2.8 0 5.6-.8 8-2.3l112-72.3c15.2-10 12.3-32.4-4.8-39.4zM532.7 301.9l-20.7 13.4c-6 3.9-13 6-20.1 6H148.1c-7.1 0-14.1-2.1-20.1-6l-20.7-13.4c-4.4-2.9-10.3-1.6-13.2 2.9l-21.3 32.8c-4.6 7.1-1.6 16.5 6.2 19.8l197.4 82.5c24.6 10.3 52.6 10.3 77.2 0l197.4-82.5c7.8-3.3 10.8-12.7 6.2-19.8l-21.3-32.8c-2.9-4.5-8.8-5.8-13.2-2.9z'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="home-style.css">
+    <style>
+        .profile-card { background:#fff; border-radius:30px; padding:35px 40px; max-width:650px; box-shadow:0 15px 40px rgba(0,0,0,0.06); margin-bottom:20px; }
+        .profile-header { display:flex; align-items:center; gap:24px; margin-bottom:25px; }
+        .profile-avatar { width:80px; height:80px; border-radius:50%; border:3px solid #0099cc; }
+        .profile-info h2 { font-size:22px; font-weight:700; color:#023e50; }
+        .profile-info .uname { font-size:14px; color:#8e9fae; font-weight:600; }
+        .profile-info .streak { font-size:13px; color:#f39c12; font-weight:700; margin-top:4px; }
+        .stats-row { display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px; }
+        .stat-box { background:#f0f4f8; border-radius:16px; padding:14px 22px; text-align:center; flex:1; min-width:90px; }
+        .stat-box .val { font-size:22px; font-weight:700; color:#023e50; }
+        .stat-box .lbl { font-size:11px; color:#8e9fae; font-weight:600; text-transform:uppercase; margin-top:3px; }
+        .badges-section h3 { font-size:16px; font-weight:700; color:#023e50; margin-bottom:12px; }
+        .badges-grid { display:flex; gap:10px; flex-wrap:wrap; min-height:40px; }
+        .badge-chip { background:#f0f4f8; border-radius:12px; padding:8px 14px; font-size:20px; border:2px solid transparent; cursor:default; transition:0.2s; }
+        .badge-chip:hover { border-color:#0099cc; transform:scale(1.1); }
+        .no-badges { font-size:14px; color:#8e9fae; }
+        .edit-row { display:flex; gap:10px; margin-top:18px; }
+        .edit-input { flex:1; height:44px; background:#f0f4f8; border:2px solid transparent; border-radius:14px; padding:0 16px; font-size:14px; font-weight:600; font-family:'Montserrat',sans-serif; outline:none; transition:0.3s; }
+        .edit-input:focus { border-color:#0099cc; background:#fff; }
+        .save-btn { height:44px; padding:0 22px; background:linear-gradient(90deg,#023e50,#0099cc); border:none; border-radius:14px; color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:'Montserrat',sans-serif; transition:0.2s; white-space:nowrap; }
+        .save-btn:hover { box-shadow:0 5px 15px rgba(0,153,204,0.25); transform:translateY(-1px); }
+        .xp-bar-wrap { margin:10px 0 20px; }
+        .xp-bar-label { display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#023e50; margin-bottom:6px; }
+        .xp-bar { height:8px; background:#e9eff5; border-radius:10px; overflow:hidden; }
+        .xp-bar-fill { height:100%; background:linear-gradient(90deg,#0099cc,#023e50); border-radius:10px; transition:1s; }
+        .logout-btn { background:#e9eff5; color:#023e50; border:none; border-radius:14px; padding:12px 24px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Montserrat',sans-serif; margin-top:10px; transition:0.2s; }
+        .logout-btn:hover { background:#e74c3c; color:#fff; }
+        .admin-box { margin-top:20px; background:#fffcf0; border:2px dashed #f39c12; border-radius:20px; padding:22px; }
+        .admin-box h3 { color:#d35400; font-size:16px; font-weight:700; margin-bottom:10px; }
+        .admin-stats { display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px; }
+        .admin-stat { background:#fff; border-radius:12px; padding:12px 18px; text-align:center; flex:1; min-width:80px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+        .admin-stat .v { font-size:20px; font-weight:700; color:#023e50; }
+        .admin-stat .l { font-size:11px; color:#8e9fae; font-weight:600; }
+    </style>
+</head>
+<body>
+    <header class="global-header">
+        <div class="header-left"><div class="brand"><i class="fa-solid fa-graduation-cap"></i><span>RootRy</span></div></div>
+        <div class="header-center">
+            <div class="user-info">
+                <img src="" alt="Аватар" id="headerAvatar" class="avatar">
+                <span id="headerUsername" class="username">Загрузка...</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="balance-box"><i class="fa-solid fa-coins"></i><span id="userBalance">0</span> <small>монет</small></div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="app-window">
+            <h1>Личный кабинет</h1>
+            <div id="profileContent"><div style="color:#8e9fae;font-size:15px;padding:20px 0"><i class="fa-solid fa-circle-notch fa-spin"></i> Загрузка...</div></div>
+        </section>
+    </main>
+
+    <nav class="bottom-tabbar">
+        <a href="games.html" class="tab-item"><i class="fa-solid fa-gamepad"></i><span>Игры</span></a>
+        <a href="shop.html" class="tab-item"><i class="fa-solid fa-store"></i><span>Магазин</span></a>
+        <a href="leaderboard.html" class="tab-item"><i class="fa-solid fa-trophy"></i><span>Топы</span></a>
+        <a href="profile.html" class="tab-item active"><i class="fa-solid fa-user"></i><span>Профиль</span></a>
+        <a href="tests.html" class="tab-item"><i class="fa-solid fa-file-invoice"></i><span>Тесты</span></a>
+        <a href="tree.html" class="tab-item"><i class="fa-solid fa-diagram-project"></i><span>Дерево</span></a>
+        <a href="authors.html" class="tab-item"><i class="fa-solid fa-users"></i><span>Авторы</span></a>
+    </nav>
+
+    <script src="api.js"></script>
+    <script>
+    initHeader();
+    let userData = null;
+
+    async function loadProfile() {
+        const r = await API.refreshUser();
+        if (!r) return;
+        userData = r;
+        renderProfile(r);
+    }
+
+    function levelFromXP(xp) {
+        return Math.floor(xp / 200) + 1;
+    }
+    function xpToNextLevel(xp) {
+        const lvl = levelFromXP(xp);
+        return lvl * 200;
+    }
+
+    function renderProfile(u) {
+        const level = levelFromXP(u.xp);
+        const nextXP = xpToNextLevel(u.xp);
+        const xpPct = Math.min(100, Math.round((u.xp % 200) / 200 * 100));
+
+        document.getElementById('profileContent').innerHTML = `
+        <div class="profile-card">
+            <div class="profile-header">
+                <img class="profile-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}" alt="">
+                <div class="profile-info">
+                    <h2>${u.nickname || u.username}</h2>
+                    <div class="uname">@${u.username}</div>
+                    <div class="streak">🔥 Серия: ${u.streak || 0} ${u.streak === 1 ? 'день' : u.streak < 5 ? 'дня' : 'дней'}</div>
+                </div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-box"><div class="val">${level}</div><div class="lbl">Уровень</div></div>
+                <div class="stat-box"><div class="val">${u.xp}</div><div class="lbl">XP</div></div>
+                <div class="stat-box"><div class="val">${u.balance}</div><div class="lbl">Монеты</div></div>
+                <div class="stat-box"><div class="val">${(u.completed_topics||[]).length}</div><div class="lbl">Тем</div></div>
+            </div>
+
+            <div class="xp-bar-wrap">
+                <div class="xp-bar-label"><span>Уровень ${level}</span><span>${u.xp % 200} / 200 XP до ур. ${level+1}</span></div>
+                <div class="xp-bar"><div class="xp-bar-fill" id="xpFill" style="width:0%"></div></div>
+            </div>
+
+            <div class="badges-section">
+                <h3>🏅 Мои значки (${(u.badges||[]).length})</h3>
+                <div class="badges-grid">
+                    ${(u.badges||[]).length ? u.badges.map(b=>`<div class="badge-chip" title="${b}">${b}</div>`).join('') : '<span class="no-badges">Пока нет значков. Играй и получай их!</span>'}
+                </div>
+            </div>
+
+            <div style="margin-top:20px;">
+                <h3 style="font-size:14px;font-weight:700;color:#023e50;margin-bottom:10px;">✏️ Изменить никнейм</h3>
+                <div class="edit-row">
+                    <input class="edit-input" id="newNick" placeholder="Новый никнейм..." value="${u.nickname||''}">
+                    <button class="save-btn" onclick="saveNickname()">Сохранить</button>
+                </div>
+            </div>
+
+            <button class="logout-btn" onclick="API.logout()"><i class="fa-solid fa-right-from-bracket"></i> Выйти из аккаунта</button>
+        </div>
+
+        ${u.is_admin ? `
+        <div class="profile-card admin-box">
+            <h3>👑 Панель администратора</h3>
+            <div class="admin-stats" id="adminStats"><div style="color:#8e9fae;font-size:13px">Загрузка...</div></div>
+            <p style="font-size:13px;color:#7f8c8d;">Все зарегистрированные пользователи и статистика платформы в реальном времени.</p>
+        </div>` : ''}
+        `;
+
+        setTimeout(() => {
+            const fill = document.getElementById('xpFill');
+            if (fill) fill.style.width = xpPct + '%';
+        }, 100);
+
+        if (u.is_admin) loadAdminStats();
+    }
+
+    async function saveNickname() {
+        const nick = document.getElementById('newNick').value.trim();
+        if (!nick) return;
+        const r = await API.put('/api/profile/nickname', { nickname: nick });
+        if (r.ok) {
+            userData = r.data;
+            localStorage.setItem('currentUser', JSON.stringify(r.data));
+            document.getElementById('headerUsername').textContent = r.data.nickname;
+            showToast('Никнейм обновлён ✓', 'success');
+        } else {
+            showToast(r.data.error || 'Ошибка', 'error');
+        }
+    }
+
+    async function loadAdminStats() {
+        const r = await API.get('/api/admin/stats');
+        if (!r.ok) return;
+        const s = r.data;
+        document.getElementById('adminStats').innerHTML = `
+            <div class="admin-stat"><div class="v">${s.total_users}</div><div class="l">Игроков</div></div>
+            <div class="admin-stat"><div class="v">${s.total_games}</div><div class="l">Игр сыграно</div></div>
+            <div class="admin-stat"><div class="v">${s.total_xp}</div><div class="l">Суммарный XP</div></div>
+        `;
+    }
+
+    loadProfile();
+    </script>
+</body>
+</html>

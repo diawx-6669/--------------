@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RootRy | Магазин</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 512'%3E%3Cpath fill='%230099cc' d='M622.3 162.4l-296-120c-16.5-6.7-35.1-6.7-51.6 0l-296 120c-17.2 7-20.1 29.5-4.8 39.4l112 72.3c2.4 1.5 5.2 2.3 8 2.3H504c2.8 0 5.6-.8 8-2.3l112-72.3c15.2-10 12.3-32.4-4.8-39.4zM532.7 301.9l-20.7 13.4c-6 3.9-13 6-20.1 6H148.1c-7.1 0-14.1-2.1-20.1-6l-20.7-13.4c-4.4-2.9-10.3-1.6-13.2 2.9l-21.3 32.8c-4.6 7.1-1.6 16.5 6.2 19.8l197.4 82.5c24.6 10.3 52.6 10.3 77.2 0l197.4-82.5c7.8-3.3 10.8-12.7 6.2-19.8l-21.3-32.8c-2.9-4.5-8.8-5.8-13.2-2.9z'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="home-style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <style>
+        /* ===== ОБЩИЙ СБРОС И ПЕРЕМЕННЫЕ ===== */
+        :root {
+            --c-common:    #6b7280;
+            --c-rare:      #3b82f6;
+            --c-epic:      #a855f7;
+            --c-legendary: #f59e0b;
+            --c-mythic:    #ef4444;
+        }
+
+        /* ===== ДЕЙЛИКИ ===== */
+        .dailies-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 40px;
+            width: 100%;
+        }
+        @media (max-width: 700px) { .dailies-container { grid-template-columns: 1fr; } }
+
+        .daily-card {
+            background: #fff;
+            border-radius: 22px;
+            padding: 24px 26px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            border: 1px solid #edf0f4;
+        }
+        .daily-card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: 800;
+            color: #023e50;
+            margin-bottom: 16px;
+            letter-spacing: 0.2px;
+        }
+        .daily-card-title i { color: #0099cc; }
+
+        /* Streak */
+        .streak-inner {
+            background: linear-gradient(135deg, #fffbf0, #fff8e1);
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+            border: 1px solid #fde68a;
+        }
+        .streak-number {
+            font-size: 42px;
+            font-weight: 900;
+            color: #f59e0b;
+            line-height: 1;
+            letter-spacing: -2px;
+        }
+        .streak-label { font-size: 12px; color: #92400e; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 4px 0 14px; }
+        .claim-btn {
+            width: 100%;
+            padding: 12px 0;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #10b981, #059669);
+            color: #fff;
+            font-weight: 800;
+            font-size: 14px;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            transition: .25s;
+            box-shadow: 0 4px 14px rgba(16,185,129,.25);
+        }
+        .claim-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,.4); }
+        .claim-btn:disabled { background: #d1d5db; color: #9ca3af; box-shadow: none; cursor: not-allowed; }
+
+        /* Квесты */
+        .quest-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+        .quest-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 12px 16px;
+            border: 1px solid #e9edf2;
+            transition: .2s;
+        }
+        .quest-item:hover { border-color: #c7d0dd; }
+        .quest-info { font-size: 13px; font-weight: 600; color: #334155; }
+        .quest-rew {
+            padding: 7px 13px;
+            background: #0099cc;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            transition: .2s;
+            white-space: nowrap;
+        }
+        .quest-rew:hover:not(:disabled) { background: #023e50; transform: scale(1.04); }
+        .quest-rew:disabled { background: #10b981; cursor: default; }
+        .free-box {
+            margin-top: 12px;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 1px solid #bae6fd;
+            border-radius: 13px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #0284c7;
+        }
+        .free-box i { font-size: 20px; color: #f59e0b; animation: bounce 2s ease infinite; }
+        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+        /* ===== СЕКЦИЯ-ЗАГОЛОВОК ===== */
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #023e50;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 20px;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            max-width: 120px;
+            height: 2px;
+            background: linear-gradient(90deg, #0099cc33, transparent);
+            border-radius: 2px;
+        }
+
+        /* ===== КЕЙСЫ ===== */
+        .cases-scroll {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 18px;
+            margin-bottom: 36px;
+            width: 100%;
+        }
+        @media (max-width: 1100px) { .cases-scroll { grid-template-columns: repeat(3, 1fr); overflow-x: auto; } }
+        @media (max-width: 700px)  { .cases-scroll { grid-template-columns: repeat(2, 1fr); } }
+
+        .case-card {
+            flex-shrink: 0;
+            width: 100%;
+            background: #fff;
+            border-radius: 24px;
+            padding: 24px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1.5px solid #edf0f4;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            transition: transform .35s cubic-bezier(.175,.885,.32,1.275), box-shadow .35s;
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+        }
+        .case-card:hover { transform: translateY(-7px); box-shadow: 0 16px 40px rgba(0,0,0,.09); }
+
+        /* SVG-иконка кейса — пульсирующая левитация */
+        .case-icon-wrap {
+            width: 110px;
+            height: 110px;
+            margin-bottom: 16px;
+            animation: float 4s ease-in-out infinite;
+            filter: drop-shadow(0 12px 18px rgba(0,0,0,.18));
+            flex-shrink: 0;
+        }
+        .case-icon-wrap svg { width: 100%; height: 100%; }
+        @keyframes float {
+            0%,100% { transform: translateY(0) rotate(-1deg); }
+            50%      { transform: translateY(-12px) rotate(1deg); }
+        }
+
+        .case-name {
+            font-size: 15px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .cn-common    { color: var(--c-common); }
+        .cn-rare      { color: var(--c-rare); text-shadow: 0 0 12px rgba(59,130,246,.4); }
+        .cn-epic      { color: var(--c-epic); text-shadow: 0 0 14px rgba(168,85,247,.5); }
+        .cn-legendary { color: var(--c-legendary); animation: goldPulse 2.4s ease-in-out infinite alternate; }
+        .cn-badge     { color: #0099cc; }
+        @keyframes goldPulse {
+            from { text-shadow: 0 0 6px rgba(245,158,11,.5); }
+            to   { text-shadow: 0 0 22px rgba(245,158,11,1), 0 0 40px rgba(245,158,11,.5); color: #fbbf24; }
+        }
+
+        /* Шансы */
+        .odds-box {
+            width: 100%;
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+            border: 1px solid #edf0f4;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+        .odd-row { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; }
+        .odd-name { width: 68px; }
+        .odd-track { flex: 1; height: 6px; background: #e9edf2; border-radius: 3px; overflow: hidden; }
+        .odd-fill { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(.25,.46,.45,.94); }
+        .odd-pct { width: 34px; text-align: right; font-size: 11px; }
+
+        .oc { color: var(--c-common); } .bc { background: var(--c-common); }
+        .or { color: var(--c-rare);   } .br { background: var(--c-rare);   }
+        .oe { color: var(--c-epic);   } .be { background: var(--c-epic);   }
+        .ol { color: var(--c-legendary); } .bl { background: var(--c-legendary); }
+        .om { color: var(--c-mythic); } .bm { background: var(--c-mythic); }
+
+        /* Кнопка покупки */
+        .buy-btn {
+            width: 100%;
+            padding: 13px 0;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(90deg, #023e50, #0099cc);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            transition: .25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 6px 18px rgba(0,153,204,.25);
+        }
+        .buy-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(0,153,204,.4);
+        }
+        .buy-btn:disabled { background: #d1d5db; color: #9ca3af; box-shadow: none; cursor: not-allowed; }
+        .buy-btn .coin-icon { color: #fca311; font-size: 16px; }
+
+        /* ===== РУЛЕТКА ОВЕРЛЕЙ ===== */
+        .rl-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 4000;
+            background: rgba(1,20,30,.93);
+            backdrop-filter: blur(12px);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+        }
+        .rl-overlay.show { display: flex; }
+
+        .rl-header {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.45);
+            margin-bottom: 20px;
+        }
+        .rl-case-name {
+            font-size: 26px;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 32px;
+            letter-spacing: -.5px;
+        }
+
+        /* Рулетка-лента */
+        .rl-stage {
+            width: min(760px, 94vw);
+            position: relative;
+        }
+        /* Боковые фады */
+        .rl-stage::before, .rl-stage::after {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 100px;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .rl-stage::before { left: 0; background: linear-gradient(90deg, rgba(1,20,30,1), transparent); }
+        .rl-stage::after  { right: 0; background: linear-gradient(-90deg, rgba(1,20,30,1), transparent); }
+
+        .rl-viewport {
+            overflow: hidden;
+            border-radius: 16px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        /* Вертикальный маркер (золотая черта) */
+        .rl-marker {
+            position: absolute;
+            left: 50%; top: 0; bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, transparent, #fca311, transparent);
+            transform: translateX(-50%);
+            z-index: 10;
+            box-shadow: 0 0 16px rgba(252,163,17,.9);
+        }
+        .rl-marker::before {
+            content: '▼';
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #fca311;
+            filter: drop-shadow(0 0 6px #fca311);
+        }
+        .rl-marker::after {
+            content: '▲';
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #fca311;
+            filter: drop-shadow(0 0 6px #fca311);
+        }
+
+        .rl-track {
+            display: flex;
+            will-change: transform;
+        }
+
+        .rl-slot {
+            flex-shrink: 0;
+            width: 108px;
+            height: 108px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 46px;
+            border-right: 1px solid rgba(255,255,255,.06);
+            position: relative;
+            transition: background .2s;
+        }
+        /* Аватар-слоты с фото */
+        .rl-slot img {
+            width: 72px;
+            height: 72px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,.15);
+        }
+
+        .rl-slot.rs-common    { background: #111827; }
+        .rl-slot.rs-rare      { background: #0f1f3d; }
+        .rl-slot.rs-epic      { background: #1a0f2e; }
+        .rl-slot.rs-legendary { background: #1f1500; }
+        .rl-slot.rs-mythic    { background: #200000; }
+
+        .rl-slot.winner {
+            animation: winnerGlow 1s ease-in-out infinite;
+        }
+        @keyframes winnerGlow {
+            0%,100% { box-shadow: inset 0 0 20px rgba(252,163,17,.3); }
+            50%      { box-shadow: inset 0 0 60px rgba(252,163,17,.8); }
+        }
+
+        /* Результат после рулетки */
+        .rl-result {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 36px;
+            animation: riseIn .55s cubic-bezier(.34,1.56,.64,1) both;
+        }
+        @keyframes riseIn {
+            from { opacity:0; transform:translateY(30px) scale(.85); }
+            to   { opacity:1; transform:translateY(0) scale(1); }
+        }
+
+        .result-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fca311;
+            box-shadow: 0 0 30px rgba(252,163,17,.6), 0 0 60px rgba(252,163,17,.2);
+            animation: popIn .6s cubic-bezier(.34,1.56,.64,1) both;
+        }
+        .result-emoji-big {
+            font-size: 90px;
+            animation: popIn .6s cubic-bezier(.34,1.56,.64,1) both;
+            filter: drop-shadow(0 8px 20px rgba(0,0,0,.4));
+        }
+        @keyframes popIn {
+            from { transform: scale(0) rotate(-15deg); opacity: 0; }
+            to   { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .result-rarity {
+            margin-top: 14px;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .result-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: #fff;
+            margin: 6px 0 4px;
+        }
+        .result-sub { font-size: 14px; color: rgba(255,255,255,.55); margin-bottom: 8px; }
+        .result-comp { font-size: 15px; color: #fca311; font-weight: 700; margin-bottom: 20px; }
+        .grab-btn {
+            padding: 14px 52px;
+            background: linear-gradient(90deg, #fca311, #f59e0b);
+            border: none;
+            border-radius: 16px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 900;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            transition: .25s;
+            box-shadow: 0 6px 24px rgba(252,163,17,.4);
+            letter-spacing: .5px;
+        }
+        .grab-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(252,163,17,.6); }
+
+        /* Пропустить */
+        .skip-link {
+            margin-top: 16px;
+            font-size: 12px;
+            color: rgba(255,255,255,.3);
+            cursor: pointer;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: color .2s;
+            display: none;
+        }
+        .skip-link:hover { color: rgba(255,255,255,.7); }
+
+        /* ===== ПРОМОКОД ===== */
+        .promo-wrap {
+            max-width: 680px;
+            width: 100%;
+            background: #fff;
+            border-radius: 26px;
+            padding: 34px 40px;
+            border: 1px solid #edf0f4;
+            box-shadow: 0 4px 20px rgba(0,0,0,.04);
+            margin-bottom: 40px;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+        .promo-sub { font-size: 13px; color: #6b7280; font-weight: 500; margin-bottom: 10px; }
+        .promo-row { display: flex; gap: 12px; width: 100%; }
+        .promo-input {
+            flex: 1;
+            height: 50px;
+            background: #f4f7f9;
+            border: 2px solid #e9edf2;
+            border-radius: 14px;
+            padding: 0 18px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #023e50;
+            transition: .2s;
+        }
+        .promo-input:focus { border-color: #0099cc; background: #fff; }
+        .promo-submit {
+            height: 50px;
+            padding: 0 28px;
+            background: linear-gradient(90deg, #023e50, #0099cc);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            transition: .25s;
+            white-space: nowrap;
+            box-shadow: 0 5px 16px rgba(0,153,204,.25);
+        }
+        .promo-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,153,204,.4); }
+        .promo-msg {
+            font-size: 13px;
+            font-weight: 700;
+            padding: 10px 16px;
+            border-radius: 11px;
+            display: none;
+            width: 100%;
+        }
+        .promo-msg.ok  { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+        .promo-msg.err { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+        /* Стаггер-появление секций */
+        .shop-section { opacity: 0; transform: translateY(18px); animation: sUp .5s ease forwards; }
+        .shop-section:nth-child(1) { animation-delay: .05s; }
+        .shop-section:nth-child(2) { animation-delay: .12s; }
+        .shop-section:nth-child(3) { animation-delay: .2s; }
+        .shop-section:nth-child(4) { animation-delay: .28s; }
+        @keyframes sUp { to { opacity:1; transform:translateY(0); } }
+
+        /* Магазин — полная ширина */
+        .main-content { padding: 0 32px; }
+        .app-window { width: 100%; }
+        .section-label { margin-top: 8px; }
+        /* Промокод — по центру страницы */
+        .shop-section:last-child { display: flex; flex-direction: column; align-items: center; }
+        .shop-section:last-child .section-label { width: 100%; max-width: 680px; }
+    </style>
+</head>
+<body>
+    <header class="global-header">
+        <div class="header-left"><div class="brand"><i class="fa-solid fa-graduation-cap"></i><span>RootRy</span></div></div>
+        <div class="header-center">
+            <div class="user-info">
+                <img src="" alt="" id="headerAvatar" class="avatar">
+                <span id="headerUsername" class="username">Загрузка...</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="balance-box"><i class="fa-solid fa-coins"></i><span id="userBalance">0</span></div>
+        </div>
+    </header>
+
+    <!-- ===== РУЛЕТКА ОВЕРЛЕЙ ===== -->
+    <div class="rl-overlay" id="rlOverlay">
+        <div class="rl-header">RootRy · Case Opening</div>
+        <div class="rl-case-name" id="rlCaseName">Открытие кейса</div>
+
+        <div class="rl-stage">
+            <div class="rl-viewport">
+                <div class="rl-marker"></div>
+                <div class="rl-track" id="rlTrack"></div>
+            </div>
+        </div>
+
+        <div class="rl-result" id="rlResult">
+            <!-- заполняется JS -->
+        </div>
+        <div class="skip-link" id="skipLink" onclick="closeRoulette()">пропустить</div>
+    </div>
+
+    <main class="main-content">
+        <section class="app-window">
+            <h1>Магазин</h1>
+
+            <!-- ДЕЙЛИКИ -->
+            <div class="shop-section">
+                <div class="dailies-container">
+                    <div class="daily-card">
+                        <div class="daily-card-title"><i class="fa-solid fa-calendar-check"></i> Ежедневный бонус</div>
+                        <div class="streak-inner">
+                            <div class="streak-number" id="streakNum">–</div>
+                            <div class="streak-label">дней подряд 🔥</div>
+                            <button class="claim-btn" id="claimBtn" onclick="claimDaily()">Забрать бонус</button>
+                        </div>
+                    </div>
+                    <div class="daily-card">
+                        <div class="daily-card-title"><i class="fa-solid fa-list-check"></i> Дейлики</div>
+                        <ul class="quest-list">
+                            <li class="quest-item" id="dailyGameQuest">
+                                <div>
+                                    <div class="quest-info">🎮 Выиграй 5 разных игр</div>
+                                    <div style="font-size:11px;color:#94a3b8;margin-top:3px" id="questSubLabel">Бонус +50 монет за 5 уникальных побед</div>
+                                </div>
+                                <span id="dailyGameStatus" style="padding:7px 13px;border-radius:10px;font-weight:800;font-size:12px;background:#e9edf2;color:#8e9fae">0 / 5</span>
+                            </li>
+                        </ul>
+                        <div class="free-box" id="questRewardBox" style="display:none;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#6ee7b7">
+                            <i class="fa-solid fa-circle-check" style="color:#10b981"></i>
+                            <span style="color:#065f46">Задание выполнено! +50 монет уже на счету!</span>
+                        </div>
+                        <div class="free-box" id="questPendingBox" style="background:linear-gradient(135deg,#fff7ed,#fef3c7);border-color:#fde68a">
+                            <i class="fa-solid fa-gamepad" style="color:#f59e0b"></i>
+                            <span style="color:#92400e">Выиграй <a href="games.html" style="color:#d97706;font-weight:800">5 разных игр</a> сегодня — +50 монет придут автоматически!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- КЕЙСЫ -->
+            <div class="shop-section">
+                <div class="section-label"><i class="fa-solid fa-box-open" style="color:#0099cc"></i> Витрина кейсов</div>
+                <div class="cases-scroll">
+
+                    <!-- ОБЫЧНЫЙ -->
+                    <div class="case-card type-common">
+                        <div class="case-icon-wrap">
+                            <!-- SVG: серый ящик с замком -->
+                            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="10" y="50" width="100" height="62" rx="12" fill="#e5e7eb"/>
+                                <rect x="10" y="50" width="100" height="62" rx="12" stroke="#d1d5db" stroke-width="2"/>
+                                <rect x="10" y="44" width="100" height="20" rx="8" fill="#9ca3af"/>
+                                <rect x="10" y="44" width="100" height="20" rx="8" stroke="#6b7280" stroke-width="1.5"/>
+                                <path d="M52 44V34a8 8 0 0116 0v10" stroke="#6b7280" stroke-width="4" stroke-linecap="round"/>
+                                <rect x="46" y="62" width="28" height="22" rx="6" fill="#6b7280"/>
+                                <circle cx="60" cy="71" r="4" fill="#e5e7eb"/>
+                                <line x1="60" y1="75" x2="60" y2="81" stroke="#e5e7eb" stroke-width="2.5" stroke-linecap="round"/>
+                                <rect x="18" y="56" width="84" height="4" rx="2" fill="rgba(255,255,255,.3)"/>
+                            </svg>
+                        </div>
+                        <div class="case-name cn-common">Обычный</div>
+                        <div class="odds-box">
+                            <div class="odd-row"><span class="odd-name oc">Обычная</span><div class="odd-track"><div class="odd-fill bc" style="width:70%"></div></div><span class="odd-pct oc">70%</span></div>
+                            <div class="odd-row"><span class="odd-name or">Редкая</span><div class="odd-track"><div class="odd-fill br" style="width:18%"></div></div><span class="odd-pct or">18%</span></div>
+                            <div class="odd-row"><span class="odd-name oe">Эпик</span><div class="odd-track"><div class="odd-fill be" style="width:10%"></div></div><span class="odd-pct oe">10%</span></div>
+                            <div class="odd-row"><span class="odd-name ol">Лега</span><div class="odd-track"><div class="odd-fill bl" style="width:2%"></div></div><span class="odd-pct ol">2%</span></div>
+                            <div class="odd-row"><span class="odd-name om">Мифик</span><div class="odd-track"><div class="odd-fill bm" style="width:0%"></div></div><span class="odd-pct om">0%</span></div>
+                        </div>
+                        <button class="buy-btn" onclick="openCase('common', 600, this)">600 <i class="fa-solid fa-coins coin-icon"></i></button>
+                    </div>
+
+                    <!-- РЕДКИЙ -->
+                    <div class="case-card type-rare">
+                        <div class="case-icon-wrap">
+                            <!-- SVG: синий ящик с синим замком -->
+                            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="10" y="50" width="100" height="62" rx="12" fill="#dbeafe"/>
+                                <rect x="10" y="50" width="100" height="62" rx="12" stroke="#93c5fd" stroke-width="2"/>
+                                <rect x="10" y="44" width="100" height="20" rx="8" fill="#60a5fa"/>
+                                <rect x="10" y="44" width="100" height="20" rx="8" stroke="#3b82f6" stroke-width="1.5"/>
+                                <path d="M52 44V34a8 8 0 0116 0v10" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+                                <rect x="46" y="62" width="28" height="22" rx="6" fill="#3b82f6"/>
+                                <circle cx="60" cy="71" r="4" fill="#dbeafe"/>
+                                <line x1="60" y1="75" x2="60" y2="81" stroke="#dbeafe" stroke-width="2.5" stroke-linecap="round"/>
+                                <rect x="18" y="56" width="84" height="4" rx="2" fill="rgba(255,255,255,.4)"/>
+                                <!-- Звёздочки -->
+                                <circle cx="28" cy="80" r="3" fill="#93c5fd" opacity=".7"/>
+                                <circle cx="92" cy="68" r="2" fill="#93c5fd" opacity=".5"/>
+                                <circle cx="85" cy="90" r="2.5" fill="#93c5fd" opacity=".6"/>
+                            </svg>
+                        </div>
+                        <div class="case-name cn-rare">Редкий</div>
+                        <div class="odds-box">
+                            <div class="odd-row"><span class="odd-name oc">Обычная</span><div class="odd-track"><div class="odd-fill bc" style="width:40%"></div></div><span class="odd-pct oc">40%</span></div>
+                            <div class="odd-row"><span class="odd-name or">Редкая</span><div class="odd-track"><div class="odd-fill br" style="width:42.5%"></div></div><span class="odd-pct or">42.5%</span></div>
+                            <div class="odd-row"><span class="odd-name oe">Эпик</span><div class="odd-track"><div class="odd-fill be" style="width:12.5%"></div></div><span class="odd-pct oe">12.5%</span></div>
+                            <div class="odd-row"><span class="odd-name ol">Лега</span><div class="odd-track"><div class="odd-fill bl" style="width:4.5%"></div></div><span class="odd-pct ol">4.5%</span></div>
+                            <div class="odd-row"><span class="odd-name om">Мифик</span><div class="odd-track"><div class="odd-fill bm" style="width:0.5%"></div></div><span class="odd-pct om">0.5%</span></div>
+                        </div>
+                        <button class="buy-btn" onclick="openCase('rare', 1500, this)">1 500 <i class="fa-solid fa-coins coin-icon"></i></button>
+                    </div>
+
+                    <!-- ЭПИК -->
+                    <div class="case-card type-epic">
+                        <div class="case-icon-wrap">
+                            <!-- SVG: фиолетовый ящик с рунами -->
+                            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="10" y="50" width="100" height="62" rx="12" fill="#f3e8ff"/>
+                                <rect x="10" y="50" width="100" height="62" rx="12" stroke="#d8b4fe" stroke-width="2"/>
+                                <rect x="10" y="44" width="100" height="20" rx="8" fill="#c084fc"/>
+                                <rect x="10" y="44" width="100" height="20" rx="8" stroke="#a855f7" stroke-width="1.5"/>
+                                <path d="M52 44V34a8 8 0 0116 0v10" stroke="#a855f7" stroke-width="4" stroke-linecap="round"/>
+                                <rect x="46" y="62" width="28" height="22" rx="6" fill="#a855f7"/>
+                                <circle cx="60" cy="71" r="4" fill="#f3e8ff"/>
+                                <line x1="60" y1="75" x2="60" y2="81" stroke="#f3e8ff" stroke-width="2.5" stroke-linecap="round"/>
+                                <rect x="18" y="56" width="84" height="4" rx="2" fill="rgba(255,255,255,.35)"/>
+                                <!-- Молния-узоры -->
+                                <path d="M25 68 l5-8 l-3 4 l5-4" stroke="#d8b4fe" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M88 75 l5-8 l-3 4 l5-4" stroke="#d8b4fe" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="20" cy="90" r="3" fill="#d8b4fe" opacity=".6"/>
+                                <circle cx="100" cy="60" r="2.5" fill="#d8b4fe" opacity=".5"/>
+                            </svg>
+                        </div>
+                        <div class="case-name cn-epic">Эпический</div>
+                        <div class="odds-box">
+                            <div class="odd-row"><span class="odd-name oc">Обычная</span><div class="odd-track"><div class="odd-fill bc" style="width:20%"></div></div><span class="odd-pct oc">20%</span></div>
+                            <div class="odd-row"><span class="odd-name or">Редкая</span><div class="odd-track"><div class="odd-fill br" style="width:52.5%"></div></div><span class="odd-pct or">52.5%</span></div>
+                            <div class="odd-row"><span class="odd-name oe">Эпик</span><div class="odd-track"><div class="odd-fill be" style="width:22.5%"></div></div><span class="odd-pct oe">22.5%</span></div>
+                            <div class="odd-row"><span class="odd-name ol">Лега</span><div class="odd-track"><div class="odd-fill bl" style="width:9%"></div></div><span class="odd-pct ol">9%</span></div>
+                            <div class="odd-row"><span class="odd-name om">Мифик</span><div class="odd-track"><div class="odd-fill bm" style="width:1%"></div></div><span class="odd-pct om">1%</span></div>
+                        </div>
+                        <button class="buy-btn" onclick="openCase('epic', 3000, this)">3 000 <i class="fa-solid fa-coins coin-icon"></i></button>
+                    </div>
+
+                    <!-- ЛЕГЕНДАРНЫЙ -->
+                    <div class="case-card type-legendary">
+                        <div class="case-icon-wrap">
+                            <!-- SVG: золотой ящик с короной -->
+                            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="10" y="50" width="100" height="62" rx="12" fill="#fef3c7"/>
+                                <rect x="10" y="50" width="100" height="62" rx="12" stroke="#fcd34d" stroke-width="2"/>
+                                <rect x="10" y="44" width="100" height="20" rx="8" fill="#fbbf24"/>
+                                <rect x="10" y="44" width="100" height="20" rx="8" stroke="#f59e0b" stroke-width="1.5"/>
+                                <!-- Корона вместо замка -->
+                                <path d="M44 44 L44 30 L52 38 L60 26 L68 38 L76 30 L76 44Z" fill="#f59e0b" stroke="#d97706" stroke-width="1.5" stroke-linejoin="round"/>
+                                <rect x="42" y="44" width="36" height="6" rx="3" fill="#f59e0b" stroke="#d97706" stroke-width="1"/>
+                                <rect x="18" y="56" width="84" height="4" rx="2" fill="rgba(255,255,255,.45)"/>
+                                <!-- Бриллиант в центре -->
+                                <path d="M52 70 L60 63 L68 70 L60 84Z" fill="#fbbf24" stroke="#d97706" stroke-width="1.5" stroke-linejoin="round"/>
+                                <path d="M52 70 L60 63 L68 70" stroke="#fff8" stroke-width="1"/>
+                                <!-- Искры -->
+                                <circle cx="22" cy="72" r="3" fill="#fcd34d" opacity=".8"/>
+                                <circle cx="98" cy="65" r="2" fill="#fcd34d" opacity=".7"/>
+                                <circle cx="90" cy="92" r="3" fill="#fcd34d" opacity=".6"/>
+                                <circle cx="30" cy="95" r="2" fill="#fcd34d" opacity=".5"/>
+                            </svg>
+                        </div>
+                        <div class="case-name cn-legendary">Легендарный</div>
+                        <div class="odds-box">
+                            <div class="odd-row"><span class="odd-name oc">Обычная</span><div class="odd-track"><div class="odd-fill bc" style="width:0%"></div></div><span class="odd-pct oc">0%</span></div>
+                            <div class="odd-row"><span class="odd-name or">Редкая</span><div class="odd-track"><div class="odd-fill br" style="width:20%"></div></div><span class="odd-pct or">20%</span></div>
+                            <div class="odd-row"><span class="odd-name oe">Эпик</span><div class="odd-track"><div class="odd-fill be" style="width:40%"></div></div><span class="odd-pct oe">40%</span></div>
+                            <div class="odd-row"><span class="odd-name ol">Лега</span><div class="odd-track"><div class="odd-fill bl" style="width:35%"></div></div><span class="odd-pct ol">35%</span></div>
+                            <div class="odd-row"><span class="odd-name om">Мифик</span><div class="odd-track"><div class="odd-fill bm" style="width:5%"></div></div><span class="odd-pct om">5%</span></div>
+                        </div>
+                        <button class="buy-btn" onclick="openCase('legendary', 10000, this)">10 000 <i class="fa-solid fa-coins coin-icon"></i></button>
+                    </div>
+
+                    <!-- КЕЙС ЗНАЧКОВ -->
+                    <div class="case-card type-badge">
+                        <div class="case-icon-wrap">
+                            <!-- SVG: голубой конверт с медалью -->
+                            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="10" y="50" width="100" height="62" rx="12" fill="#e0f2fe"/>
+                                <rect x="10" y="50" width="100" height="62" rx="12" stroke="#7dd3fc" stroke-width="2"/>
+                                <rect x="10" y="44" width="100" height="20" rx="8" fill="#38bdf8"/>
+                                <rect x="10" y="44" width="100" height="20" rx="8" stroke="#0284c7" stroke-width="1.5"/>
+                                <path d="M52 44V34a8 8 0 0116 0v10" stroke="#0284c7" stroke-width="4" stroke-linecap="round"/>
+                                <rect x="18" y="56" width="84" height="4" rx="2" fill="rgba(255,255,255,.4)"/>
+                                <!-- Медаль -->
+                                <circle cx="60" cy="78" r="14" fill="#0099cc"/>
+                                <circle cx="60" cy="78" r="10" fill="#38bdf8"/>
+                                <text x="60" y="83" text-anchor="middle" font-size="14" fill="#fff" font-weight="bold">★</text>
+                                <!-- Лента медали -->
+                                <path d="M53 64 L57 73 M67 64 L63 73" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/>
+                                <path d="M53 64 L67 64" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="case-name cn-badge">Значки</div>
+                        <div class="odds-box">
+                            <div class="odd-row"><span class="odd-name oc">Обычный</span><div class="odd-track"><div class="odd-fill bc" style="width:40%"></div></div><span class="odd-pct oc">40%</span></div>
+                            <div class="odd-row"><span class="odd-name or">Редкий</span><div class="odd-track"><div class="odd-fill br" style="width:30%"></div></div><span class="odd-pct or">30%</span></div>
+                            <div class="odd-row"><span class="odd-name oe">Эпик</span><div class="odd-track"><div class="odd-fill be" style="width:20%"></div></div><span class="odd-pct oe">20%</span></div>
+                            <div class="odd-row"><span class="odd-name ol">Лега</span><div class="odd-track"><div class="odd-fill bl" style="width:10%"></div></div><span class="odd-pct ol">10%</span></div>
+                            <div class="odd-row"><span class="odd-name om">Мифик</span><div class="odd-track"><div class="odd-fill bm" style="width:0%"></div></div><span class="odd-pct om">0%</span></div>
+                        </div>
+                        <button class="buy-btn" onclick="openCase('badge', 300, this)">300 <i class="fa-solid fa-coins coin-icon"></i></button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ПРОМОКОД -->
+            <div class="shop-section">
+                <div class="section-label"><i class="fa-solid fa-ticket" style="color:#0099cc"></i> Промокод</div>
+                <div class="promo-wrap">
+                    <div class="daily-card-title" style="margin-bottom:2px"><i class="fa-solid fa-tag" style="color:#0099cc"></i> Введи секретный код</div>
+                    <div class="promo-sub">Монеты, значки и особые аватарки за промокоды от команды RootRy.</div>
+                    <div class="promo-row">
+                        <input class="promo-input" id="promoInput" type="text" placeholder="ВВЕДИ КОД..." maxlength="32">
+                        <button class="promo-submit" id="promoBtn" onclick="redeemPromo()">Активировать</button>
+                    </div>
+                    <div class="promo-msg" id="promoMsg"></div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <nav class="bottom-tabbar">
+        <a href="games.html" class="tab-item"><i class="fa-solid fa-gamepad"></i><span>Игры</span></a>
+        <a href="shop.html" class="tab-item active"><i class="fa-solid fa-store"></i><span>Магазин</span></a>
+        <a href="leaderboard.html" class="tab-item"><i class="fa-solid fa-trophy"></i><span>Топы</span></a>
+        <a href="profile.html" class="tab-item"><i class="fa-solid fa-user"></i><span>Профиль</span></a>
+        <a href="tests.html" class="tab-item"><i class="fa-solid fa-file-invoice"></i><span>Тесты</span></a>
+        <a href="tree.html" class="tab-item"><i class="fa-solid fa-diagram-project"></i><span>Дерево</span></a>
+        <a href="authors.html" class="tab-item"><i class="fa-solid fa-users"></i><span>Авторы</span></a>
+    </nav>
+
+    <script src="api.js"></script>
+    <script>
+    initHeader();
+
+    /* ========== ДЕЙЛИКИ & СЕРИЯ ========== */
+    async function initShop() {
+        const u = await API.refreshUser();
+        if (!u) return;
+
+        // --- Серия ---
+        document.getElementById('streakNum').textContent = u.streak || 0;
+        const btn = document.getElementById('claimBtn');
+        const today = new Date().toISOString().slice(0, 10);
+        if (u.last_daily_claim === today) {
+            btn.textContent = '✓ Уже получено сегодня';
+            btn.disabled = true;
+        } else {
+            const streakDays = u.streak || 0;
+            const reward = 10 + Math.floor(streakDays / 7) * 5;
+            btn.textContent = `Забрать ${reward} монет 🔥`;
+            btn.disabled = false;
+        }
+
+        // --- Квест: выиграть 5 разных игр ---
+        const questDone = u.daily_tasks_date === today && u.daily_tasks_done > 0;
+        const gamesWon = (u.daily_tasks_date === today) ? (u.games_won_today || 0) : 0;
+        const statusEl = document.getElementById('dailyGameStatus');
+        const rewardBox = document.getElementById('questRewardBox');
+        const pendingBox = document.getElementById('questPendingBox');
+
+        if (questDone) {
+            statusEl.textContent = '✓ 5 / 5';
+            statusEl.style.background = '#10b981';
+            statusEl.style.color = '#fff';
+            rewardBox.style.display = 'flex';
+            pendingBox.style.display = 'none';
+            document.getElementById('questSubLabel').textContent = 'Выполнено сегодня! +50 монет получено';
+        } else {
+            statusEl.textContent = gamesWon + ' / 5';
+            statusEl.style.background = gamesWon > 0 ? '#dbeafe' : '#e9edf2';
+            statusEl.style.color = gamesWon > 0 ? '#1d4ed8' : '#8e9fae';
+            pendingBox.style.display = 'flex';
+            rewardBox.style.display = 'none';
+            if (gamesWon > 0) {
+                document.getElementById('questSubLabel').textContent = `Прогресс: ${gamesWon}/5 — ещё ${5 - gamesWon} побед!`;
+            }
+        }
+    }
+
+    async function claimDaily() {
+        const r = await API.post('/api/daily/claim', {});
+        if (r.ok && !r.data.already_claimed) {
+            // Use coins_earned directly from server response (streak-based)
+            const coinsEarned = r.data.coins_earned || 10;
+            const newBalance  = r.data.new_balance;
+            const streak      = r.data.streak || 0;
+            document.getElementById('streakNum').textContent = streak;
+            document.getElementById('userBalance').textContent = newBalance;
+            // Update cached user balance
+            const u = API.user();
+            if (u) { u.balance = newBalance; localStorage.setItem('currentUser', JSON.stringify(u)); }
+            showToast(`+${coinsEarned} монет за серию ${streak} 🔥 дней!`, 'success');
+            const btn = document.getElementById('claimBtn');
+            btn.textContent = '✓ Уже получено сегодня';
+            btn.disabled = true;
+        } else {
+            showToast('Бонус уже получен сегодня!', 'warn');
+            document.getElementById('claimBtn').disabled = true;
+        }
+    }
+
+    initShop();
+
+    /* ========== ПУЛЫ ПРЕДМЕТОВ ========== */
+    // Аватарки — теперь URL-картинки (PNG через DiceBear или свои)
+    // Формат: { img, rarity, label } — если img начинается с 'http', рендерим как фото
+    // Если добавить свои PNG — просто замени URL на путь к файлу, напр. '/avatars/tiger.png'
+    const AVATAR_POOL = {
+        common:    {
+            items: [
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=cat&backgroundColor=b6e3f4',    label: 'Кот',      emoji: '🐱' },
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=dog&backgroundColor=ffd5dc',    label: 'Пёс',      emoji: '🐶' },
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=fox&backgroundColor=c0aede',    label: 'Лис',      emoji: '🦊' },
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=panda&backgroundColor=d1f4e0',  label: 'Панда',    emoji: '🐼' },
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=bear&backgroundColor=ffd5dc',   label: 'Медведь',  emoji: '🐻' },
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=frog&backgroundColor=d1f4e0',   label: 'Лягушка',  emoji: '🐸' },
+            ],
+            color: '#6b7280', label: 'Обычная'
+        },
+        rare: {
+            items: [
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=unicorn&backgroundColor=bfdbfe', label: 'Единорог', emoji: '🦄' },
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=dragon&backgroundColor=93c5fd',  label: 'Дракон',   emoji: '🐉' },
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=butterfly&backgroundColor=c4b5fd',label:'Бабочка',  emoji: '🦋' },
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=peacock&backgroundColor=a5f3fc', label: 'Павлин',   emoji: '🦚' },
+            ],
+            color: '#3b82f6', label: 'Редкая'
+        },
+        epic: {
+            items: [
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=wizard&backgroundColor=ddd6fe', label: 'Маг',      emoji: '🧙' },
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=vampire&backgroundColor=fecdd3',label: 'Вампир',   emoji: '🧛' },
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=hero&backgroundColor=d9f99d',   label: 'Герой',    emoji: '🦸' },
+            ],
+            color: '#a855f7', label: 'Эпическая'
+        },
+        legendary: {
+            items: [
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=crown&backgroundColor=fef08a',  label: 'Корона',   emoji: '👑' },
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=star&backgroundColor=fde68a',   label: 'Звезда',   emoji: '🌟' },
+            ],
+            color: '#f59e0b', label: 'Легендарная'
+        },
+        mythic: {
+            items: [
+                { img: 'https://api.dicebear.com/7.x/bottts/svg?seed=rainbow&backgroundColor=fbcfe8', label: 'Радуга', emoji: '🌈' },
+            ],
+            color: '#ef4444', label: 'Мифическая'
+        }
+    };
+
+    const BADGE_POOL = {
+        common:    { items: [{ emoji:'📚'},{emoji:'✏️'},{emoji:'📝'},{emoji:'🎒'}], color:'#6b7280', label:'Обычный' },
+        rare:      { items: [{ emoji:'⭐'},{emoji:'🔥'},{emoji:'💡'}],              color:'#3b82f6', label:'Редкий' },
+        epic:      { items: [{ emoji:'🏆'},{emoji:'💎'}],                          color:'#a855f7', label:'Эпический' },
+        legendary: { items: [{ emoji:'👑'}],                                       color:'#f59e0b', label:'Легендарный' },
+        mythic:    { items: [],                                                     color:'#ef4444', label:'Мифический' }
+    };
+
+    /* ========== РУЛЕТКА ========== */
+    const SLOT_W  = 108;
+    const WIN_POS = 50;
+    const TOTAL   = 70;
+    let   spinning = false;
+
+    const CASE_NAMES = {
+        common: 'Обычный кейс', rare: 'Редкий кейс',
+        epic: 'Эпический кейс', legendary: 'Легендарный кейс', badge: 'Кейс значков'
+    };
+    const CHANCES = {
+        common:    { common:70, rare:18,   epic:10,   legendary:2,   mythic:0   },
+        rare:      { common:40, rare:42.5, epic:12.5, legendary:4.5, mythic:0.5 },
+        epic:      { common:20, rare:52.5, epic:22.5, legendary:9,   mythic:1   },
+        legendary: { common:0,  rare:20,   epic:40,   legendary:35,  mythic:5   },
+    };
+    const ORDER = ['common','rare','epic','legendary','mythic'];
+
+    function randRarity(caseType, isBadge) {
+        if (isBadge) {
+            const r = Math.random() * 100;
+            if (r < 40) return 'common';
+            if (r < 70) return 'rare';
+            if (r < 90) return 'epic';
+            return 'legendary';
+        }
+        const ch = CHANCES[caseType] || CHANCES.common;
+        let cum = 0, r = Math.random() * 100;
+        for (const rar of ORDER) {
+            cum += (ch[rar] || 0);
+            if (r < cum) return rar;
+        }
+        return 'common';
+    }
+
+    function randItem(pool) {
+        const items = pool.items;
+        if (!items || !items.length) return null;
+        return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function buildStrip(caseType, winItem, winRarity) {
+        const isBadge = caseType === 'badge';
+        const pool = isBadge ? BADGE_POOL : AVATAR_POOL;
+        const strip = [];
+        for (let i = 0; i < TOTAL; i++) {
+            if (i === WIN_POS) {
+                strip.push({ item: winItem, rarity: winRarity, isWin: true });
+            } else {
+                const r = randRarity(caseType, isBadge);
+                const p = pool[r] || pool.common;
+                strip.push({ item: randItem(p) || winItem, rarity: r, isWin: false });
+            }
+        }
+        return strip;
+    }
+
+    function renderSlot(slotData, isBadge) {
+        const div = document.createElement('div');
+        div.className = 'rl-slot rs-' + slotData.rarity + (slotData.isWin ? ' winner-slot' : '');
+        if (isBadge || !slotData.item?.img) {
+            div.textContent = slotData.item?.emoji || '❓';
+        } else {
+            const img = document.createElement('img');
+            img.src = slotData.item.img;
+            img.alt = slotData.item.label || '';
+            div.appendChild(img);
+        }
+        return div;
+    }
+
+    function renderTrack(strip, isBadge) {
+        const track = document.getElementById('rlTrack');
+        track.innerHTML = '';
+        track.style.transition = 'none';
+        track.style.transform = 'translateX(0)';
+        strip.forEach(s => track.appendChild(renderSlot(s, isBadge)));
+    }
+
+    function spin(onDone) {
+        const track   = document.getElementById('rlTrack');
+        const viewport= track.parentElement;
+        const vw      = viewport.offsetWidth;
+        const center  = vw / 2 - SLOT_W / 2;
+        const jitter  = (Math.random() - .5) * 40;
+        const targetX = -(WIN_POS * SLOT_W - center + jitter);
+        const DUR = 5800;
+        requestAnimationFrame(() => {
+            track.style.transition = `transform ${DUR}ms cubic-bezier(0.08, 0, 0.04, 1)`;
+            track.style.transform  = `translateX(${targetX}px)`;
+        });
+        setTimeout(() => {
+            // Подсветить победный слот
+            const slots = track.querySelectorAll('.rl-slot');
+            if (slots[WIN_POS]) slots[WIN_POS].classList.add('winner');
+            onDone();
+        }, DUR + 100);
+    }
+
+    async function openCase(type, price, btnEl) {
+        if (spinning) return;
+        const user = API.user();
+        if (!user) return;
+        if (user.balance < price) {
+            showToast(`Нужно ${price} монет, у тебя ${user.balance}`, 'error');
+            return;
+        }
+
+        spinning = true;
+        document.querySelectorAll('.buy-btn').forEach(b => b.disabled = true);
+
+        const r = await API.post('/api/case/open', { case_type: type, price });
+        if (!r.ok) {
+            showToast(r.data.error || 'Ошибка', 'error');
+            spinning = false;
+            document.querySelectorAll('.buy-btn').forEach(b => b.disabled = false);
+            return;
+        }
+
+        const { item_emoji, item_rarity, is_duplicate, compensation, new_balance, new_xp } = r.data;
+        document.getElementById('userBalance').textContent = new_balance;
+        const u = API.user();
+        if (u) { u.balance = new_balance; u.xp = new_xp; localStorage.setItem('currentUser', JSON.stringify(u)); }
+
+        const isBadge  = type === 'badge';
+        const pool     = isBadge ? BADGE_POOL : AVATAR_POOL;
+        const rarData  = pool[item_rarity] || pool.common;
+
+        // Найти предмет в пуле по emoji
+        let winItem = null;
+        if (isBadge) {
+            winItem = { emoji: item_emoji };
+        } else {
+            for (const rItems of Object.values(AVATAR_POOL)) {
+                const found = rItems.items.find(x => x.emoji === item_emoji);
+                if (found) { winItem = found; break; }
+            }
+            if (!winItem) winItem = { emoji: item_emoji, img: null, label: item_emoji };
+        }
+
+        const strip = buildStrip(type, winItem, item_rarity);
+
+        // Показать оверлей
+        const overlay = document.getElementById('rlOverlay');
+        document.getElementById('rlCaseName').textContent = CASE_NAMES[type] || 'Кейс';
+        document.getElementById('rlResult').style.display = 'none';
+        document.getElementById('skipLink').style.display = 'none';
+        renderTrack(strip, isBadge);
+        overlay.classList.add('show');
+
+        setTimeout(() => {
+            spin(() => {
+                // Показать результат
+                const result = document.getElementById('rlResult');
+                result.innerHTML = '';
+
+                if (isBadge || !winItem?.img) {
+                    const emo = document.createElement('div');
+                    emo.className = 'result-emoji-big';
+                    emo.textContent = winItem?.emoji || item_emoji;
+                    result.appendChild(emo);
+                } else {
+                    const img = document.createElement('img');
+                    img.className = 'result-avatar';
+                    img.src = winItem.img;
+                    img.alt = winItem.label || '';
+                    result.appendChild(img);
+                }
+
+                const rar = document.createElement('div');
+                rar.className = 'result-rarity';
+                rar.textContent = rarData.label;
+                rar.style.color = rarData.color;
+                result.appendChild(rar);
+
+                const title = document.createElement('div');
+                title.className = 'result-title';
+                title.textContent = winItem?.label || (is_duplicate ? 'Дубликат' : 'Новый предмет!');
+                result.appendChild(title);
+
+                const sub = document.createElement('div');
+                sub.className = 'result-sub';
+                sub.textContent = is_duplicate ? 'Уже есть в коллекции' : 'Добавлено в профиль!';
+                result.appendChild(sub);
+
+                if (is_duplicate && compensation > 0) {
+                    const comp = document.createElement('div');
+                    comp.className = 'result-comp';
+                    comp.textContent = `+${compensation} монет — компенсация`;
+                    result.appendChild(comp);
+                }
+
+                const grabBtn = document.createElement('button');
+                grabBtn.className = 'grab-btn';
+                grabBtn.textContent = 'Забрать!';
+                grabBtn.onclick = closeRoulette;
+                result.appendChild(grabBtn);
+
+                result.style.display = 'flex';
+
+                // Показать «пропустить» для следующего открытия
+                setTimeout(() => {
+                    document.getElementById('skipLink').style.display = 'block';
+                }, 800);
+            });
+        }, 300);
+    }
+
+    function closeRoulette() {
+        document.getElementById('rlOverlay').classList.remove('show');
+        document.querySelectorAll('.buy-btn').forEach(b => b.disabled = false);
+        spinning = false;
+    }
+
+    /* ========== ПРОМОКОД ========== */
+    async function redeemPromo() {
+        const code = document.getElementById('promoInput').value.trim().toUpperCase();
+        if (!code) return;
+        const btn = document.getElementById('promoBtn');
+        const msg = document.getElementById('promoMsg');
+        btn.disabled = true;
+        btn.textContent = '...';
+
+        const r = await API.post('/api/promo', { code });
+        msg.style.display = 'block';
+
+        if (r.ok && r.data.success) {
+            msg.className = 'promo-msg ok';
+            msg.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + r.data.message;
+            document.getElementById('promoInput').value = '';
+            showToast(r.data.message, 'success');
+            const u = await API.refreshUser();
+            if (u) document.getElementById('userBalance').textContent = u.balance;
+        } else {
+            msg.className = 'promo-msg err';
+            msg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' + (r.data.message || r.data.error || 'Неверный код');
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Активировать';
+        setTimeout(() => { msg.style.display = 'none'; }, 4500);
+    }
+
+    document.getElementById('promoInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') redeemPromo();
+    });
+
+    /* ========== ЗАКРЫТИЕ ПО КЛИКУ ВНЕ ========== */
+    document.getElementById('rlOverlay').addEventListener('click', e => {
+        if (e.target === e.currentTarget && !spinning) closeRoulette();
+    });
+    </script>
+</body>
+</html>

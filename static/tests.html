@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RootRy | Тесты КСПОЯ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 512'%3E%3Cpath fill='%230099cc' d='M622.3 162.4l-296-120c-16.5-6.7-35.1-6.7-51.6 0l-296 120c-17.2 7-20.1 29.5-4.8 39.4l112 72.3c2.4 1.5 5.2 2.3 8 2.3H504c2.8 0 5.6-.8 8-2.3l112-72.3c15.2-10 12.3-32.4-4.8-39.4zM532.7 301.9l-20.7 13.4c-6 3.9-13 6-20.1 6H148.1c-7.1 0-14.1-2.1-20.1-6l-20.7-13.4c-4.4-2.9-10.3-1.6-13.2 2.9l-21.3 32.8c-4.6 7.1-1.6 16.5 6.2 19.8l197.4 82.5c24.6 10.3 52.6 10.3 77.2 0l197.4-82.5c7.8-3.3 10.8-12.7 6.2-19.8l-21.3-32.8c-2.9-4.5-8.8-5.8-13.2-2.9z'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="home-style.css">
+    <style>
+        /* Scroll-in animation */
+        .app-window > * { opacity:0; transform:translateY(18px); animation: slideUp 0.4s ease forwards; }
+        .app-window > *:nth-child(1){ animation-delay:0.05s; }
+        .app-window > *:nth-child(2){ animation-delay:0.12s; }
+        @keyframes slideUp { to { opacity:1; transform:translateY(0); } }
+
+        .test-start-card { background:#fff; border-radius:30px; padding:40px; max-width:700px; box-shadow:0 15px 40px rgba(0,0,0,0.06); margin-bottom:20px; }
+        .level-badges { display:flex; gap:10px; flex-wrap:wrap; margin:15px 0; }
+        .level-badge { padding:8px 16px; border-radius:12px; font-size:12px; font-weight:700; }
+        .level-badge.a1{ background:#e9eff5; color:#8e9fae; }
+        .level-badge.a2{ background:#e8f5e9; color:#2e7d32; }
+        .level-badge.b1{ background:#e8eaf6; color:#283593; }
+        .level-badge.b2{ background:#ede7f6; color:#6a1b9a; }
+        .level-badge.c1{ background:#fff8e1; color:#e65100; }
+        .level-badge.c2{ background:linear-gradient(90deg,#ff6b6b,#feca57,#48dbfb,#ff9ff3); color:#fff; text-shadow:0 1px 3px rgba(0,0,0,0.3); }
+        .start-test-btn { margin-top:20px; height:52px; padding:0 40px; background:linear-gradient(90deg,#023e50,#0099cc); border:none; border-radius:16px; color:#fff; font-size:16px; font-weight:700; cursor:pointer; font-family:'Montserrat',sans-serif; transition:0.3s; }
+        .start-test-btn:hover { box-shadow:0 8px 25px rgba(0,153,204,0.3); transform:translateY(-2px); }
+
+        .test-ui { display:none; }
+        .test-ui.active { display:block; }
+
+        .test-header { background:#fff; border-radius:20px; padding:18px 25px; max-width:700px; margin-bottom:20px; box-shadow:0 5px 20px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; }
+        .test-progress-text { font-size:14px; font-weight:700; color:#023e50; }
+        /* Fix: timer green when time is plenty, red when low */
+        .test-timer { font-size:18px; font-weight:700; color:#2ecc71; display:flex; align-items:center; gap:6px; }
+        .test-timer.urgent { color:#e74c3c; }
+        .test-progress-bar-wrap { margin-top:8px; height:4px; background:#e9eff5; border-radius:4px; overflow:hidden; }
+        .test-progress-bar-fill { height:100%; background:linear-gradient(90deg,#0099cc,#023e50); transition:0.4s; }
+
+        .test-question-card { background:#fff; border-radius:24px; padding:32px 35px; max-width:700px; box-shadow:0 10px 30px rgba(0,0,0,0.06); margin-bottom:20px; animation: slideUp 0.3s ease; }
+        .test-q-num { font-size:12px; color:#8e9fae; font-weight:700; text-transform:uppercase; margin-bottom:10px; }
+        .test-q-text { font-size:18px; font-weight:700; color:#023e50; line-height:1.5; margin-bottom:20px; }
+        .test-options { display:flex; flex-direction:column; gap:10px; }
+        .test-opt { padding:14px 20px; border:2px solid #e9eff5; border-radius:14px; background:#fff; font-size:14px; font-weight:600; color:#023e50; cursor:pointer; text-align:left; font-family:'Montserrat',sans-serif; transition:0.2s; }
+        .test-opt:hover:not(:disabled) { border-color:#0099cc; background:#f0faff; }
+        .test-opt.selected { border-color:#0099cc; background:#e8f4ff; }
+        .test-opt.correct { border-color:#2ecc71 !important; background:#e8fdf0 !important; color:#1a7a42 !important; }
+        .test-opt.wrong   { border-color:#e74c3c !important; background:#fdf0f0 !important; color:#a93226 !important; }
+        .test-opt:disabled { cursor:default; }
+
+        .test-nav { display:flex; max-width:700px; margin-bottom:20px; }
+        .test-next-btn { flex:1; height:48px; background:linear-gradient(90deg,#023e50,#0099cc); border:none; border-radius:14px; color:#fff; font-size:15px; font-weight:700; cursor:pointer; font-family:'Montserrat',sans-serif; transition:0.2s; }
+        .test-next-btn:hover:not(:disabled) { box-shadow:0 5px 15px rgba(0,153,204,0.3); }
+        .test-next-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+        .test-result-card { background:#fff; border-radius:30px; padding:45px; max-width:700px; text-align:center; box-shadow:0 15px 40px rgba(0,0,0,0.06); animation: fadeInUp 0.5s ease; }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+        .test-result-score { font-size:72px; font-weight:700; color:#0099cc; }
+        .test-result-level { font-size:24px; font-weight:700; margin:10px 0; }
+        .test-result-badge { font-size:64px; margin:15px 0; animation: popBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.3s both; }
+        @keyframes popBounce { 0%{transform:scale(0)rotate(-15deg);} 80%{transform:scale(1.1)rotate(3deg);} 100%{transform:scale(1)rotate(0);} }
+        .test-result-details { font-size:14px; color:#666; margin-bottom:20px; }
+        .test-rewards { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin:15px 0; }
+        .reward-pill { background:#e9eff5; padding:10px 18px; border-radius:14px; font-size:14px; font-weight:700; color:#023e50; display:flex; align-items:center; gap:8px; }
+        .retry-btn { height:48px; padding:0 35px; background:linear-gradient(90deg,#023e50,#0099cc); border:none; border-radius:14px; color:#fff; font-size:15px; font-weight:700; cursor:pointer; font-family:'Montserrat',sans-serif; margin-top:20px; transition:0.2s; }
+        .retry-btn:hover { box-shadow:0 5px 15px rgba(0,153,204,0.3); transform:translateY(-2px); }
+
+        .anticheat-warning { position:fixed; inset:0; background:rgba(231,76,60,0.96); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; color:#fff; text-align:center; padding:40px; }
+        .anticheat-warning.show { display:flex; }
+        .anticheat-warning h2 { font-size:28px; font-weight:700; margin-bottom:15px; }
+        .anticheat-warning p { font-size:16px; opacity:0.9; line-height:1.6; }
+        .anticheat-btn { margin-top:25px; padding:14px 35px; background:#fff; color:#e74c3c; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; font-family:'Montserrat',sans-serif; }
+    </style>
+</head>
+<body>
+    <div class="anticheat-warning" id="anticheatWarning">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size:64px;margin-bottom:20px;"></i>
+        <h2>Тест аннулирован!</h2>
+        <p>Вы покинули вкладку во время прохождения теста.<br>Тест засчитан как проваленный.</p>
+        <button class="anticheat-btn" onclick="cancelTest()">Вернуться к тестам</button>
+    </div>
+
+    <header class="global-header">
+        <div class="header-left"><div class="brand"><i class="fa-solid fa-graduation-cap"></i><span>RootRy</span></div></div>
+        <div class="header-center">
+            <div class="user-info">
+                <img src="" alt="Аватарка" id="headerAvatar" class="avatar">
+                <span id="headerUsername" class="username">Загрузка...</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="balance-box"><i class="fa-solid fa-coins"></i><span id="userBalance">0</span> <small>монет</small></div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="app-window">
+            <h1>Тестирование КСПОЯ</h1>
+
+            <div id="startScreen">
+                <div class="test-start-card">
+                    <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">
+                        <i class="fa-solid fa-file-invoice" style="font-size:32px;color:#0099cc;"></i>
+                        <h2 style="font-size:20px;font-weight:700;color:#023e50;">Казахстанская система проверки и оценивания языка</h2>
+                    </div>
+                    <p style="color:#666;font-size:14px;line-height:1.7;margin-bottom:15px;">
+                        Финальный экзамен по русскому языку. 10 вопросов по грамматике, орфографии и стилистике.
+                        За успешную сдачу ты получишь <strong>защищённый значок уровня</strong> — его нельзя получить промокодом.
+                    </p>
+                    <div class="level-badges">
+                        <span class="level-badge a1">A1 — 0–4</span>
+                        <span class="level-badge a2">A2 — 5–6 ⭐</span>
+                        <span class="level-badge b1">B1 — 7 🏆</span>
+                        <span class="level-badge b2">B2 — 8 👑</span>
+                        <span class="level-badge c1">C1 — 9 🌟</span>
+                        <span class="level-badge c2">C2 — 10 🌈</span>
+                    </div>
+                    <div style="background:#fff3e0;border-radius:14px;padding:14px 18px;font-size:13px;color:#e65100;font-weight:600;margin-top:12px;">
+                        <i class="fa-solid fa-eye-slash"></i> Античит: переключение вкладки немедленно аннулирует тест
+                    </div>
+                    <button class="start-test-btn" onclick="startTest()">
+                        <i class="fa-solid fa-play"></i> Начать тест
+                    </button>
+                </div>
+            </div>
+
+            <div class="test-ui" id="testScreen">
+                <div class="test-header">
+                    <div>
+                        <div class="test-progress-text">Вопрос <span id="qNum">1</span> из 10</div>
+                        <div class="test-progress-bar-wrap" style="width:220px;">
+                            <div class="test-progress-bar-fill" id="testProgressBar" style="width:10%;"></div>
+                        </div>
+                    </div>
+                    <div class="test-timer" id="testTimer">
+                        <i class="fa-solid fa-clock"></i> <span id="timerText">10:00</span>
+                    </div>
+                </div>
+                <div class="test-question-card" id="questionCard"></div>
+                <div class="test-nav">
+                    <button class="test-next-btn" id="nextBtn" onclick="nextQuestion()" disabled>
+                        Следующий вопрос <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="test-ui" id="resultScreen">
+                <div class="test-result-card" id="resultCard"></div>
+            </div>
+        </section>
+    </main>
+
+    <nav class="bottom-tabbar">
+        <a href="games.html" class="tab-item"><i class="fa-solid fa-gamepad"></i><span>Игры</span></a>
+        <a href="shop.html" class="tab-item"><i class="fa-solid fa-store"></i><span>Магазин</span></a>
+        <a href="leaderboard.html" class="tab-item"><i class="fa-solid fa-trophy"></i><span>Топы</span></a>
+        <a href="profile.html" class="tab-item"><i class="fa-solid fa-user"></i><span>Профиль</span></a>
+        <a href="tests.html" class="tab-item active"><i class="fa-solid fa-file-invoice"></i><span>Тесты</span></a>
+        <a href="tree.html" class="tab-item"><i class="fa-solid fa-diagram-project"></i><span>Дерево</span></a>
+        <a href="authors.html" class="tab-item"><i class="fa-solid fa-users"></i><span>Авторы</span></a>
+    </nav>
+
+    <script src="api.js"></script>
+    <script>
+    initHeader();
+
+    const ALL_QUESTIONS = [
+        { q: 'Как правильно писать: «в течени__ дня»?',
+          opts: ['в течение дня','в течении дня','втечение дня','в течению дня'], correct: 0 },
+        { q: 'Выберите правильное ударение в слове «звонит»:',
+          opts: ['зво́нит','звони́т','звонит','звóнит'], correct: 1 },
+        { q: 'Какое предложение написано правильно?',
+          opts: ['Он не смог прийти, не смотря на обещание.',
+                 'Он не смог прийти, несмотря на обещание.',
+                 'Он не смог придти несмотря на обещание.',
+                 'Он несмог прийти, несмотря на обещание.'], correct: 1 },
+        { q: 'НЕ пишется слитно с прилагательным в предложении:',
+          opts: ['Этот поступок (не)красивый, а отвратительный.',
+                 '(Не)добрый взгляд хозяина смутил гостей.',
+                 'Он был вовсе (не)готов к экзамену.',
+                 'Задача оказалась (не)решённой.'], correct: 1 },
+        { q: 'Укажите слово с проверяемой безударной гласной в корне:',
+          opts: ['горизонт','растение','вокзал','хлопок'], correct: 3 },
+        { q: 'В каком слове пишется НН?',
+          opts: ['стира(н/нн)ое бельё','кова(н/нн)ый меч','броше(н/нн)ый камень','реше(н/нн)ая задача'], correct: 2 },
+        { q: 'Определите тип сказуемого: «Небо было тёмным»:',
+          opts: ['Простое глагольное','Составное глагольное','Составное именное','Нет сказуемого'], correct: 2 },
+        { q: 'Укажите строку, где все слова пишутся через дефис:',
+          opts: ['(пол)арбуза, (светло)синий, (кое)кто',
+                 '(пол)дня, по(русски), (горько)солёный',
+                 'юго(запад), мало(помалу), (пол)Москвы',
+                 '(пол)стакана, тёмно(синий), (кое)как'], correct: 2 },
+        { q: 'Как пишется: «прик_снуться»?',
+          opts: ['прикасаться (прикосн-)','прикасноться','прикостнуться','прекоснуться'], correct: 0 },
+        { q: 'Укажите предложение с пунктуационной ошибкой:',
+          opts: ['Солнце, выглянув из-за туч, осветило поле.',
+                 'Он читал, и она слушала музыку.',
+                 'Наступила осень, листья, пожелтев, начали опадать.',
+                 'Несмотря на усталость, они продолжали идти.'], correct: 2 },
+    ];
+
+    let questions = [];
+    let userAnswers = [];
+    let currentQ = 0;
+    let timerInterval = null;
+    let timeLeft = 600;
+    let testActive = false;
+
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function startTest() {
+        questions = shuffle(ALL_QUESTIONS);
+        userAnswers = new Array(questions.length).fill(-1);
+        currentQ = 0;
+        timeLeft = 600;
+        testActive = true;
+
+        document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('testScreen').classList.add('active');
+        document.getElementById('resultScreen').classList.remove('active');
+
+        renderQuestion();
+        startTimer();
+    }
+
+    function renderQuestion() {
+        const q = questions[currentQ];
+        document.getElementById('qNum').textContent = currentQ + 1;
+        document.getElementById('testProgressBar').style.width = ((currentQ + 1) / questions.length * 100) + '%';
+
+        const nextBtn = document.getElementById('nextBtn');
+        nextBtn.disabled = userAnswers[currentQ] === -1;
+        nextBtn.textContent = currentQ < questions.length - 1 ? 'Следующий вопрос →' : 'Завершить тест ✓';
+
+        // Use DOM API to avoid XSS
+        const card = document.getElementById('questionCard');
+        card.innerHTML = '';
+
+        const numDiv = document.createElement('div');
+        numDiv.className = 'test-q-num';
+        numDiv.textContent = `Вопрос ${currentQ + 1} из ${questions.length}`;
+        card.appendChild(numDiv);
+
+        const qText = document.createElement('div');
+        qText.className = 'test-q-text';
+        qText.textContent = q.q;
+        card.appendChild(qText);
+
+        const optsDiv = document.createElement('div');
+        optsDiv.className = 'test-options';
+        q.opts.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'test-opt' + (userAnswers[currentQ] === i ? ' selected' : '');
+            btn.disabled = userAnswers[currentQ] !== -1;
+            btn.innerHTML = `<span style="color:#0099cc;margin-right:8px;">${String.fromCharCode(65+i)}.</span>`;
+            btn.appendChild(document.createTextNode(opt));
+            btn.onclick = () => selectAnswer(i);
+            optsDiv.appendChild(btn);
+        });
+        card.appendChild(optsDiv);
+
+        if (userAnswers[currentQ] !== -1) highlightAnswers();
+    }
+
+    function selectAnswer(idx) {
+        if (userAnswers[currentQ] !== -1) return;
+        userAnswers[currentQ] = idx;
+        document.getElementById('nextBtn').disabled = false;
+        highlightAnswers();
+    }
+
+    function highlightAnswers() {
+        const q = questions[currentQ];
+        const btns = document.querySelectorAll('.test-opt');
+        btns.forEach((btn, i) => {
+            btn.disabled = true;
+            btn.classList.remove('selected');
+            if (i === q.correct) btn.classList.add('correct');
+            else if (i === userAnswers[currentQ] && i !== q.correct) btn.classList.add('wrong');
+        });
+    }
+
+    function nextQuestion() {
+        if (currentQ < questions.length - 1) {
+            currentQ++;
+            renderQuestion();
+        } else {
+            finishTest();
+        }
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const sec = (timeLeft % 60).toString().padStart(2, '0');
+            const timerEl = document.getElementById('timerText');
+            const timerWrap = document.getElementById('testTimer');
+            if (timerEl) {
+                timerEl.textContent = `${min}:${sec}`;
+                // Fix: green when plenty of time, red when < 60s
+                timerWrap.className = 'test-timer' + (timeLeft < 60 ? ' urgent' : '');
+            }
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                finishTest(true);
+            }
+        }, 1000);
+    }
+
+    async function finishTest(timeout = false) {
+        clearInterval(timerInterval);
+        testActive = false;
+
+        // Count correct — raw userAnswers array sent to server as-is
+        let correct = 0;
+        questions.forEach((q, i) => {
+            if (userAnswers[i] === q.correct) correct++;
+        });
+        const total = questions.length;
+
+        // Determine level client-side for display
+        let level, badge, badgeColor, xp, coins;
+        if (correct === 10)     { level='C2'; badge='🌈'; badgeColor='linear-gradient(90deg,#ff6b6b,#feca57,#48dbfb)'; xp=2000; coins=500; }
+        else if (correct === 9) { level='C1'; badge='🌟'; badgeColor='#e65100'; xp=1500; coins=400; }
+        else if (correct === 8) { level='B2'; badge='👑'; badgeColor='#fca311'; xp=1000; coins=300; }
+        else if (correct === 7) { level='B1'; badge='🏆'; badgeColor='#9c27b0'; xp=750; coins=200; }
+        else if (correct >= 5)  { level='A2'; badge='⭐'; badgeColor='#4caf50'; xp=500; coins=100; }
+        else                    { level='A1'; badge='📝'; badgeColor='#8e9fae'; xp=0; coins=0; }
+
+        const passed = correct >= 5;
+
+        // Fix: send raw userAnswers (not a corrupted mapped array)
+        let serverResp = { badge_earned: '', new_xp: 0, new_balance: 0 };
+        try {
+            const r = await API.post('/api/test/submit', { answers: userAnswers });
+            if (r.ok) serverResp = r.data;
+        } catch(e) {}
+
+        document.getElementById('testScreen').classList.remove('active');
+        document.getElementById('resultScreen').classList.add('active');
+
+        const msg = timeout ? '⏰ Время вышло!' : passed ? '🎉 Тест пройден!' : '📚 Нужно больше практики';
+
+        const card = document.getElementById('resultCard');
+        card.innerHTML = '';
+
+        card.innerHTML = `
+            <p style="font-size:13px;color:#8e9fae;font-weight:700;text-transform:uppercase;letter-spacing:1px;">${msg}</p>
+            <div class="test-result-score">${correct}/${total}</div>
+            <div class="test-result-badge">${badge}</div>
+            <div class="test-result-level" style="color:${badgeColor.startsWith('linear') ? '#023e50' : badgeColor}">
+                Уровень ${level}
+            </div>
+            <div class="test-result-details">${correct} правильных из ${total}</div>
+            ${passed ? `
+            <div class="test-rewards">
+                <div class="reward-pill"><i class="fa-solid fa-star" style="color:#0099cc"></i> +${serverResp.xp_earned ?? xp} XP</div>
+                <div class="reward-pill"><i class="fa-solid fa-coins" style="color:#f39c12"></i> +${serverResp.coins_earned ?? coins} монет</div>
+                ${serverResp.badge_earned ? `<div class="reward-pill">${serverResp.badge_earned} Новый значок!</div>` : ''}
+            </div>` : '<p style="color:#e74c3c;font-size:14px;font-weight:600;margin:15px 0;">Для прохождения нужно 5+ правильных ответов</p>'}
+            <button class="retry-btn" onclick="retryTest()">
+                <i class="fa-solid fa-rotate-right"></i> Пройти снова
+            </button>
+        `;
+
+        if (serverResp.new_balance) {
+            document.getElementById('userBalance').textContent = serverResp.new_balance;
+            API.refreshUser();
+        }
+    }
+
+    function cancelTest() {
+        clearInterval(timerInterval);
+        testActive = false;
+        document.getElementById('anticheatWarning').classList.remove('show');
+        document.getElementById('testScreen').classList.remove('active');
+        document.getElementById('startScreen').style.display = '';
+    }
+
+    function retryTest() {
+        document.getElementById('resultScreen').classList.remove('active');
+        document.getElementById('startScreen').style.display = '';
+    }
+
+    // Anticheat
+    document.addEventListener('visibilitychange', () => {
+        if (!testActive) return;
+        if (document.hidden) {
+            clearInterval(timerInterval);
+            testActive = false;
+            document.getElementById('anticheatWarning').classList.add('show');
+        }
+    });
+    </script>
+</body>
+</html>

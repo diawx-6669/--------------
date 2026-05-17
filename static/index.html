@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RootRy | Вход и Регистрация</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 512'%3E%3Cpath fill='%230099cc' d='M622.3 162.4l-296-120c-16.5-6.7-35.1-6.7-51.6 0l-296 120c-17.2 7-20.1 29.5-4.8 39.4l112 72.3c2.4 1.5 5.2 2.3 8 2.3H504c2.8 0 5.6-.8 8-2.3l112-72.3c15.2-10 12.3-32.4-4.8-39.4zM532.7 301.9l-20.7 13.4c-6 3.9-13 6-20.1 6H148.1c-7.1 0-14.1-2.1-20.1-6l-20.7-13.4c-4.4-2.9-10.3-1.6-13.2 2.9l-21.3 32.8c-4.6 7.1-1.6 16.5 6.2 19.8l197.4 82.5c24.6 10.3 52.6 10.3 77.2 0l197.4-82.5c7.8-3.3 10.8-12.7 6.2-19.8l-21.3-32.8c-2.9-4.5-8.8-5.8-13.2-2.9z'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .hint-box {
+            background: rgba(0,153,204,0.1);
+            border: 1px solid rgba(0,153,204,0.3);
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #023e50;
+            text-align: center;
+        }
+        .hint-box b { color: #0099cc; }
+        .spinner { display: none; }
+        .btn.loading .spinner { display: inline; }
+        .btn.loading .btn-text { display: none; }
+    </style>
+</head>
+<body>
+    <div id="authMsg" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 28px;border-radius:20px;font-family:Montserrat,sans-serif;font-weight:600;font-size:14px;z-index:9999;transition:0.3s;box-shadow:0 8px 25px rgba(0,0,0,0.15);opacity:0;pointer-events:none;"></div>
+
+    <div class="container" id="mainContainer">
+        <div class="form-box login">
+            <div class="top-bar">
+                <div class="brand"><i class="fa-solid fa-graduation-cap"></i><span>RootRy</span></div>
+            </div>
+            <form id="loginForm">
+                <h1>С возвращением</h1>
+                <div class="input-box">
+                    <span class="prefix">@</span>
+                    <input type="text" id="loginUser" placeholder="username" required autocomplete="username">
+                </div>
+                <div class="input-box">
+                    <input type="password" id="loginPass" class="password-input" placeholder="Пароль" required autocomplete="current-password">
+                    <i class="fa-solid fa-eye-slash toggle-password"></i>
+                </div>
+                <button type="submit" class="btn" id="loginBtn">
+                    <span class="btn-text">Войти</span>
+                    <span class="spinner"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+                </button>
+                <div class="hint-box">Демо: <b>demo</b> / <b>demo123</b></div>
+            </form>
+        </div>
+
+        <div class="form-box register">
+            <div class="top-bar">
+                <div class="brand"><i class="fa-solid fa-graduation-cap"></i><span>RootRy</span></div>
+            </div>
+            <form id="regForm">
+                <h1>Регистрация</h1>
+                <div class="input-box">
+                    <span class="prefix">@</span>
+                    <input type="text" id="regUser" placeholder="username (только латиница)" required minlength="3" autocomplete="username">
+                </div>
+                <div class="input-box">
+                    <input type="text" id="regNickname" placeholder="Никнейм" required autocomplete="off">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="input-box">
+                    <input type="password" id="regPass" class="password-input" placeholder="Пароль (мин. 6)" required minlength="6" autocomplete="new-password">
+                    <i class="fa-solid fa-eye-slash toggle-password"></i>
+                </div>
+                <button type="submit" class="btn" id="regBtn">
+                    <span class="btn-text">Создать аккаунт</span>
+                    <span class="spinner"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+                </button>
+            </form>
+        </div>
+
+        <div class="toggle-box">
+            <div class="toggle-panel toggle-left">
+                <h2>Привет, друг!</h2>
+                <p>Впервые у нас? Начни свой путь к знаниям вместе с RootRy прямо сейчас.</p>
+                <button class="btn toggle-btn" id="toRegister">Регистрация</button>
+            </div>
+            <div class="toggle-panel toggle-right">
+                <h2>Рады видеть!</h2>
+                <p>Если у тебя уже есть аккаунт, просто войди, чтобы продолжить обучение.</p>
+                <button class="btn toggle-btn" id="toLogin">Войти</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const API = '';  // same origin — Go сервер раздаёт и фронт и API
+    const container = document.getElementById('mainContainer');
+
+    document.getElementById('toLogin').addEventListener('click', () => container.classList.remove('active'));
+    document.getElementById('toRegister').addEventListener('click', () => container.classList.add('active'));
+
+    document.querySelectorAll('.toggle-password').forEach(icon => {
+        icon.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('.password-input');
+            input.type = input.type === 'password' ? 'text' : 'password';
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    });
+
+    function showMsg(text, type) {
+        const msg = document.getElementById('authMsg');
+        msg.textContent = text;
+        msg.style.background = type === 'error' ? '#e74c3c' : '#2ecc71';
+        msg.style.color = '#fff';
+        msg.style.opacity = '1';
+        setTimeout(() => { msg.style.opacity = '0'; }, 3000);
+    }
+
+    function setLoading(btn, loading) {
+        btn.classList.toggle('loading', loading);
+        btn.disabled = loading;
+    }
+
+    document.getElementById('regForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('regBtn');
+        setLoading(btn, true);
+        const username = document.getElementById('regUser').value.trim();
+        const nickname = document.getElementById('regNickname').value.trim();
+        const password = document.getElementById('regPass').value;
+        try {
+            const res = await fetch(`${API}/api/register`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username, nickname, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('currentUser', JSON.stringify(data.user));
+                showMsg('Аккаунт создан! 🎉', 'success');
+                setTimeout(() => window.location.href = 'games.html', 800);
+            } else {
+                showMsg(data.error || 'Ошибка регистрации', 'error');
+            }
+        } catch(err) {
+            showMsg('Сервер недоступен', 'error');
+        } finally {
+            setLoading(btn, false);
+        }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('loginBtn');
+        setLoading(btn, true);
+        const username = document.getElementById('loginUser').value.trim();
+        const password = document.getElementById('loginPass').value;
+        try {
+            const res = await fetch(`${API}/api/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('currentUser', JSON.stringify(data.user));
+                showMsg(`Добро пожаловать, ${data.user.nickname}! 👋`, 'success');
+                setTimeout(() => window.location.href = 'games.html', 800);
+            } else {
+                showMsg(data.error || 'Неверный логин или пароль', 'error');
+            }
+        } catch(err) {
+            showMsg('Сервер недоступен', 'error');
+        } finally {
+            setLoading(btn, false);
+        }
+    });
+
+    // Redirect if already logged in
+    if (localStorage.getItem('token')) {
+        window.location.href = 'games.html';
+    }
+    </script>
+</body>
+</html>

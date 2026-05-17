@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ударный космос | RootRy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #020814; min-height: 100vh; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
+
+        /* Stars background */
+        #starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+        .game-header {
+            width: 100%; background: rgba(2,8,20,0.9); display: flex; align-items: center;
+            justify-content: space-between; padding: 14px 24px; position: fixed; top: 0; left: 0; z-index: 100;
+            border-bottom: 1px solid rgba(0,153,204,0.3); backdrop-filter: blur(10px); box-sizing: border-box;
+        }
+        .brand { color: #fff; font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        .brand span { color: #0099cc; }
+        .hud { display: flex; gap: 20px; align-items: center; }
+        .hud-item { color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .score-num { color: #0099cc; font-size: 20px; }
+        .shield-icon { color: #f39c12; }
+
+        .surrender-btn {
+            background: rgba(231,76,60,0.2); border: 1px solid #e74c3c; color: #e74c3c;
+            padding: 8px 18px; border-radius: 12px; font-family: 'Montserrat', sans-serif;
+            font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        .surrender-btn:hover { background: rgba(231,76,60,0.4); }
+
+        /* Game area */
+        #gameArea {
+            margin-top: 70px;
+            width: 100%; max-width: 700px;
+            height: calc(100vh - 70px);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+        }
+
+        /* Asteroid */
+        .asteroid {
+            position: absolute;
+            background: rgba(40,40,60,0.95);
+            border: 2px solid rgba(100,100,160,0.7);
+            border-radius: 18px;
+            padding: 18px 28px;
+            text-align: center;
+            cursor: default;
+            animation: fallDown 6s linear forwards;
+            box-shadow: 0 0 30px rgba(100,100,160,0.3);
+            transform: translateX(-50%); /* Centering relative to left % */
+        }
+        @keyframes fallDown {
+            from { top: -140px; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            to   { top: 90%; opacity: 0; }
+        }
+
+        .asteroid-word { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 2px; }
+        .vowel-targets { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+
+        .vowel-btn {
+            background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px; padding: 10px 16px; font-size: 20px; font-weight: 800;
+            color: #e8f4fd; cursor: pointer; transition: 0.15s; font-family: 'Montserrat', sans-serif;
+        }
+        .vowel-btn:hover { border-color: #0099cc; background: rgba(0,153,204,0.2); transform: scale(1.08); }
+        .vowel-btn.hit-correct { border-color: #2ecc71 !important; background: rgba(46,204,113,0.3) !important; animation: laserHit 0.5s ease; }
+        .vowel-btn.hit-wrong   { border-color: #e74c3c !important; background: rgba(231,76,60,0.3) !important; animation: shake 0.4s ease; }
+
+        @keyframes laserHit { 0%{transform:scale(1.2);box-shadow:0 0 30px #2ecc71;} 100%{transform:scale(1);} }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+        /* Ship */
+        #ship {
+            position: absolute;
+            bottom: 30px;
+            font-size: 40px;
+            transition: left 0.4s ease-out;
+            filter: drop-shadow(0 0 20px rgba(0,153,204,0.8));
+            user-select: none;
+            transform: translateX(-50%); /* Centering relative to left % */
+            z-index: 10;
+        }
+
+        /* Laser beam */
+        .laser {
+            position: absolute;
+            width: 4px;
+            background: #0099cc;
+            box-shadow: 0 0 10px #0099cc, 0 0 20px #0099cc;
+            z-index: 2;
+            pointer-events: none;
+            animation: laserFade 0.3s ease forwards;
+        }
+        @keyframes laserFade { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+        /* Shield display */
+        .shield-bar { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+        .shield-pip { width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(243,156,18,0.3); transition: 0.3s; }
+        .shield-pip.active { background: rgba(243,156,18,0.5); border-color: #f39c12; box-shadow: 0 0 10px rgba(243,156,18,0.5); }
+
+        /* Combo streak */
+        #comboBar {
+            position: absolute; top: 50px; right: 20px;
+            color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 700;
+            text-align: right;
+        }
+        .combo-big { font-size: 22px; color: #f39c12; animation: comboPop 0.3s ease; }
+        @keyframes comboPop { 0%{transform:scale(1.4);} 100%{transform:scale(1);} }
+
+        /* Overlays */
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(2,8,20,0.96); z-index: 300; align-items: center; justify-content: center; flex-direction: column; }
+        .overlay.show { display: flex; }
+        .overlay-box { background: #fff; border-radius: 28px; padding: 40px 50px; max-width: 460px; width: 90%; text-align: center; box-sizing: border-box; animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+        @keyframes popIn { from{opacity:0;transform:scale(0.8);} to{opacity:1;transform:scale(1);} }
+        .overlay-box h2 { color: #023e50; font-size: 26px; margin-bottom: 8px; }
+        .big-num { font-size: 64px; font-weight: 800; color: #0099cc; line-height: 1; margin: 10px 0; }
+        .stars { font-size: 32px; margin: 8px 0; }
+        .action-btn { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(90deg,#023e50,#0099cc); color: #fff; border: none; border-radius: 16px; padding: 14px 28px; font-size: 15px; font-weight: 700; font-family: 'Montserrat', sans-serif; cursor: pointer; transition: 0.2s; margin: 4px; }
+        .action-btn:hover { box-shadow: 0 8px 24px rgba(0,153,204,0.4); transform: translateY(-2px); }
+        .action-btn.secondary { background: #e9eff5; color: #023e50; }
+        .action-btn.secondary:hover { box-shadow: none; transform: none; background: #d0dce6; }
+    </style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<div class="game-header">
+    <div class="brand"><i class="fa-solid fa-graduation-cap"></i> Root<span>Ry</span></div>
+    <div class="hud">
+        <div class="hud-item"><i class="fa-solid fa-star" style="color:#f39c12"></i><span class="score-num" id="scoreDisplay">0</span></div>
+        <div class="hud-item"><i class="fa-solid fa-shield-halved shield-icon"></i><span id="shieldDisplay">0</span></div>
+        <div class="hud-item" style="color:rgba(255,255,255,0.5);font-size:12px;" id="qDisplay">1/12</div>
+    </div>
+    <button class="surrender-btn" onclick="confirmSurrender()"><i class="fa-solid fa-flag"></i> Сдаться</button>
+</div>
+
+<div id="gameArea">
+    <div class="shield-bar" id="shieldBar">
+        <div class="shield-pip" id="sp0"></div>
+        <div class="shield-pip" id="sp1"></div>
+        <div class="shield-pip" id="sp2"></div>
+    </div>
+    <div id="comboBar">Комбо: <span id="comboNum">0</span></div>
+    <div id="ship" style="left:50%;">🚀</div>
+</div>
+
+<div class="overlay show" id="startOverlay">
+    <div class="overlay-box">
+        <div style="font-size:56px;margin-bottom:10px;">🚀</div>
+        <h2>Ударный космос</h2>
+        <p style="color:#666;font-size:14px;line-height:1.6;margin:12px 0;">Астероиды летят на тебя! Кликни на слог с <strong>правильным ударением</strong>, чтобы уничтожить астероид.<br><br>🛡️ Серия из 3 правильных — получаешь щит!</p>
+        <button class="action-btn" onclick="startGame()"><i class="fa-solid fa-rocket"></i> Запустить!</button>
+    </div>
+</div>
+
+<div class="overlay" id="endOverlay">
+    <div class="overlay-box">
+        <div class="stars" id="endStars">⭐</div>
+        <h2 id="endTitle">Готово!</h2>
+        <div class="big-num" id="endScore">0</div>
+        <p style="color:#666;font-size:14px;margin:8px 0 20px;">Точность: <strong id="accuracy">0%</strong></p>
+        <button class="action-btn" onclick="startGame()"><i class="fa-solid fa-rotate-right"></i> Ещё раз</button>
+        <button class="action-btn secondary" onclick="window.location.href='games.html'"><i class="fa-solid fa-arrow-left"></i> Назад</button>
+    </div>
+</div>
+
+<div class="overlay" id="surrenderOverlay">
+    <div class="overlay-box">
+        <div style="font-size:48px;margin-bottom:10px;">🏳️</div>
+        <h2>Сдаться?</h2>
+        <p style="color:#666;font-size:14px;">Текущий счёт: <strong id="surrenderScore">0</strong></p>
+        <button class="action-btn" style="background:linear-gradient(90deg,#c0392b,#e74c3c);" onclick="endGame()"><i class="fa-solid fa-flag"></i> Завершить</button>
+        <button class="action-btn secondary" onclick="hideOverlay('surrenderOverlay')">Вернуться</button>
+    </div>
+</div>
+
+
+<script src="api.js"></script>
+<script>
+// Starfield animation
+const canvas = document.getElementById('starfield');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+const stars = Array.from({length:180}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+    r: Math.random()*1.5+0.3, speed: Math.random()*0.3+0.1, opacity: Math.random()*0.7+0.3
+}));
+function drawStars() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    stars.forEach(s => {
+        s.y += s.speed; if(s.y > canvas.height) { s.y = 0; s.x = Math.random()*canvas.width; }
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle = `rgba(255,255,255,${s.opacity})`; ctx.fill();
+    });
+    requestAnimationFrame(drawStars);
+}
+drawStars();
+
+// Исправленный словарь ударений
+const WORDS = [
+    { word: 'ЗВОНИТ',    syllables: ['зво', 'нит'], correct: 1 },
+    { word: 'КАТАЛОГ',   syllables: ['ка', 'та', 'лог'], correct: 2 },
+    { word: 'ТОРТЫ',     syllables: ['тор', 'ты'], correct: 0 },
+    { word: 'КРАСИВЕЕ',  syllables: ['кра', 'си', 'ве', 'е'], correct: 1 },
+    { word: 'ЖАЛЮЗИ',    syllables: ['жа', 'лю', 'зи'], correct: 2 },
+    { word: 'ВКЛЮЧИТ',   syllables: ['вклю', 'чит'], correct: 1 },
+    { word: 'АЭРОПОРТЫ', syllables: ['а', 'э', 'ро', 'пор', 'ты'], correct: 3 },
+    { word: 'БАНТЫ',     syllables: ['бан', 'ты'], correct: 0 },
+    { word: 'ШОФЁР',     syllables: ['шо', 'фёр'], correct: 1 },
+    { word: 'ДОГОВОР',   syllables: ['до', 'го', 'вор'], correct: 2 },
+    { word: 'СВЁКЛА',    syllables: ['свё', 'кла'], correct: 0 },
+    { word: 'ОБЕСПЕЧЕНИЕ', syllables: ['о', 'бес', 'пе', 'че', 'ни', 'е'], correct: 2 }
+];
+
+let score = 0, correct = 0, total = 0, combo = 0, shield = 0;
+let currentIdx = 0, gameActive = false;
+let currentAsteroid = null;
+
+// Перемешивание массива
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function startGame() {
+    hideOverlay('startOverlay'); hideOverlay('endOverlay'); hideOverlay('surrenderOverlay');
+    score = 0; correct = 0; total = 0; combo = 0; shield = 0; currentIdx = 0; gameActive = true;
+    shuffle(WORDS);
+    
+    document.getElementById('scoreDisplay').textContent = 0;
+    document.getElementById('shieldDisplay').textContent = 0;
+    updateShieldUI();
+    updateCombo();
+    document.querySelectorAll('.asteroid').forEach(a => a.remove());
+    spawnNext();
+}
+
+function spawnNext() {
+    if (!gameActive) return;
+    if (currentIdx >= WORDS.length) { setTimeout(endGame, 500); return; }
+
+    const w = WORDS[currentIdx];
+    currentIdx++;
+    total++;
+
+    document.getElementById('qDisplay').textContent = `${currentIdx}/${WORDS.length}`;
+
+    // Центрируем корабль и астероид на одной оси
+    const ship = document.getElementById('ship');
+    const xPos = 20 + Math.random() * 60; // от 20% до 80% ширины экрана
+    ship.style.left = xPos + '%';
+
+    const asteroid = document.createElement('div');
+    asteroid.className = 'asteroid';
+    asteroid.style.left = xPos + '%';
+    asteroid.dataset.answered = "false"; // Предотвращаем двойные срабатывания
+
+    const label = document.createElement('div');
+    label.className = 'asteroid-word';
+    label.textContent = w.word;
+    asteroid.appendChild(label);
+
+    const vowelRow = document.createElement('div');
+    vowelRow.className = 'vowel-targets';
+
+    w.syllables.forEach((syl, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'vowel-btn';
+        btn.textContent = syl.toUpperCase();
+        btn.onclick = () => handleShot(btn, i === w.correct, asteroid, w);
+        vowelRow.appendChild(btn);
+    });
+
+    asteroid.appendChild(vowelRow);
+    document.getElementById('gameArea').appendChild(asteroid);
+    currentAsteroid = asteroid;
+
+    // Обработка падения (промах)
+    asteroid.addEventListener('animationend', () => {
+        if (asteroid.dataset.answered === "false" && gameActive) {
+            asteroid.dataset.answered = "true";
+            handleMiss(asteroid, w);
+            setTimeout(() => {
+                if (asteroid.parentNode) asteroid.remove();
+                spawnNext();
+            }, 800);
+        }
+    });
+}
+
+function fireLaser(targetBtn) {
+    const ship = document.getElementById('ship');
+    const laser = document.createElement('div');
+    laser.className = 'laser';
+    
+    const shipRect = ship.getBoundingClientRect();
+    const btnRect = targetBtn.getBoundingClientRect();
+    
+    laser.style.left = (shipRect.left + shipRect.width / 2 - 2) + 'px';
+    laser.style.top = btnRect.bottom + 'px';
+    laser.style.height = (shipRect.top - btnRect.bottom) + 'px';
+    
+    document.body.appendChild(laser);
+    setTimeout(() => laser.remove(), 300);
+}
+
+function handleMiss(asteroid, w) {
+    if (shield > 0) { 
+        shield--; 
+        updateShieldUI(); 
+        showComboFlash('🛡️ Щит спас от падения!'); 
+    } else { 
+        combo = 0; 
+        updateCombo(); 
+    }
+    
+    // Подсвечиваем правильный ответ перед удалением
+    const buttons = asteroid.querySelectorAll('.vowel-btn');
+    if (buttons[w.correct]) {
+        buttons[w.correct].classList.add('hit-correct');
+    }
+    
+    document.getElementById('shieldDisplay').textContent = shield;
+}
+
+function handleShot(btn, isCorrect, asteroid, w) {
+    if (!gameActive || asteroid.dataset.answered === "true") return;
+    asteroid.dataset.answered = "true";
+    
+    fireLaser(btn);
+
+    if (isCorrect) {
+        btn.classList.add('hit-correct');
+        score += 10 + (combo >= 2 ? 5 : 0);
+        correct++;
+        combo++;
+        if (combo % 3 === 0 && shield < 3) { shield++; updateShieldUI(); showComboFlash('🛡️ +Щит!'); }
+        else if (combo > 1) { showComboFlash(`🔥 Серия ${combo}!`); }
+        updateCombo();
+    } else {
+        btn.classList.add('hit-wrong');
+        if (shield > 0) { shield--; updateShieldUI(); showComboFlash('🛡️ Щит поглотил урон!'); }
+        else { combo = 0; }
+        updateCombo();
+        
+        // Подсвечиваем правильный
+        const buttons = asteroid.querySelectorAll('.vowel-btn');
+        if (buttons[w.correct]) buttons[w.correct].classList.add('hit-correct');
+    }
+
+    document.getElementById('scoreDisplay').textContent = score;
+    document.getElementById('shieldDisplay').textContent = shield;
+
+    setTimeout(() => {
+        if (asteroid.parentNode) asteroid.remove();
+        spawnNext();
+    }, 800);
+}
+
+function updateShieldUI() {
+    for (let i = 0; i < 3; i++) {
+        const pip = document.getElementById('sp'+i);
+        if (pip) pip.classList.toggle('active', i < shield);
+    }
+}
+
+function updateCombo() {
+    const el = document.getElementById('comboNum');
+    el.textContent = combo;
+    if (combo > 1) { el.className = 'combo-big'; setTimeout(() => el.className = '', 300); }
+}
+
+function showComboFlash(text) {
+    const el = document.createElement('div');
+    el.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#f39c12;color:#fff;padding:8px 22px;border-radius:20px;font-size:14px;font-weight:800;z-index:200;animation:flashAnim 1.5s ease forwards;pointer-events:none;';
+    el.textContent = text;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+}
+
+function endGame() {
+    gameActive = false;
+    
+    // Закрываем окно подтверждения сдачи
+    hideOverlay('surrenderOverlay');
+
+    const pct = total > 0 ? Math.round((correct/total)*100) : 0;
+    document.getElementById('endStars').textContent = pct >= 85 ? '⭐⭐⭐' : pct >= 60 ? '⭐⭐' : '⭐';
+    document.getElementById('endTitle').textContent = pct >= 85 ? '🏆 Космический ас!' : pct >= 60 ? '🚀 Хорошо!' : '📚 Учи ударения!';
+    document.getElementById('endScore').textContent = score;
+    document.getElementById('accuracy').textContent = pct + '%';
+    if(typeof submitGameResult==='function')submitGameResult('stress', typeof score!=='undefined'?score:0);
+    showOverlay('endOverlay');
+}
+
+function confirmSurrender() {
+    document.getElementById('surrenderScore').textContent = score;
+    showOverlay('surrenderOverlay');
+}
+
+function showOverlay(id) { document.getElementById(id).classList.add('show'); }
+function hideOverlay(id) { document.getElementById(id).classList.remove('show'); }
+</script>
+<style>
+@keyframes flashAnim { 0%{opacity:0;transform:translateX(-50%) scale(0.8);} 15%{opacity:1;transform:translateX(-50%) scale(1.1);} 30%{transform:translateX(-50%) scale(1);} 80%{opacity:1;} 100%{opacity:0;} }
+</style>
+</body>
+</html>

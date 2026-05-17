@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RootRy | Мини-игры</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 512'%3E%3Cpath fill='%230099cc' d='M622.3 162.4l-296-120c-16.5-6.7-35.1-6.7-51.6 0l-296 120c-17.2 7-20.1 29.5-4.8 39.4l112 72.3c2.4 1.5 5.2 2.3 8 2.3H504c2.8 0 5.6-.8 8-2.3l112-72.3c15.2-10 12.3-32.4-4.8-39.4zM532.7 301.9l-20.7 13.4c-6 3.9-13 6-20.1 6H148.1c-7.1 0-14.1-2.1-20.1-6l-20.7-13.4c-4.4-2.9-10.3-1.6-13.2 2.9l-21.3 32.8c-4.6 7.1-1.6 16.5 6.2 19.8l197.4 82.5c24.6 10.3 52.6 10.3 77.2 0l197.4-82.5c7.8-3.3 10.8-12.7 6.2-19.8l-21.3-32.8c-2.9-4.5-8.8-5.8-13.2-2.9z'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="home-style.css">
+    <style>
+        /* ── TOOLBAR ── */
+       /* ── TOOLBAR ── */
+        .games-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            position: relative; /* НОВОЕ: позиционируем слой */
+            z-index: 100;       /* НОВОЕ: поднимаем панель над карточками */
+        }
+        .search-box { margin-bottom: 0; flex: 1; min-width: 200px; max-width: 340px; }
+
+        .filter-btn {
+            height: 55px;
+            padding: 0 22px;
+            background: #fff;
+            border: 2px solid #e9eff5;
+            border-radius: 18px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #023e50;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            transition: 0.2s;
+            position: relative;
+            white-space: nowrap;
+        }
+        .filter-btn:hover { border-color: #0099cc; }
+        .filter-btn.has-filter { border-color: #0099cc; background: #f0faff; color: #0099cc; }
+        .filter-dot { width: 8px; height: 8px; background: #0099cc; border-radius: 50%; display: none; }
+        .filter-btn.has-filter .filter-dot { display: block; }
+
+        .tag-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+            padding: 18px;
+            z-index: 9999;
+            min-width: 320px;
+            max-width: 420px;
+        }
+        .tag-dropdown.open { display: block; animation: dropIn 0.2s ease; }
+        @keyframes dropIn { from{opacity:0;transform:translateY(-8px);} to{opacity:1;transform:translateY(0);} }
+        .tag-dropdown-title { font-size: 12px; font-weight: 700; color: #8e9fae; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag-chip {
+            padding: 6px 14px;
+            border-radius: 12px;
+            border: 2px solid #e9eff5;
+            background: #f7f9fb;
+            font-size: 12px;
+            font-weight: 600;
+            color: #023e50;
+            cursor: pointer;
+            transition: 0.15s;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .tag-chip:hover { border-color: #0099cc; background: #f0faff; }
+        .tag-chip.active { border-color: #0099cc; background: #0099cc; color: #fff; }
+        .tag-clear { margin-top: 12px; width: 100%; background: none; border: none; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 600; color: #e74c3c; cursor: pointer; text-align: left; padding: 0; }
+        .tag-clear:hover { text-decoration: underline; }
+
+        /* ── SECTION TITLES ── */
+        .games-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #8e9fae;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+            margin-top: 10px;
+        }
+
+        /* ── GRID: 5 per row, fills full width ── */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+
+        /* ── CARD ── */
+        .game-card {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(18px);
+            animation: cardSlideIn 0.4s ease forwards;
+            position: relative;
+        }
+        @keyframes cardSlideIn { to { opacity:1; transform:translateY(0); } }
+        .game-card:hover { transform: translateY(-5px); box-shadow: 0 18px 40px rgba(0,153,204,0.16); border-color: #0099cc; }
+
+        .game-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #e9eff5 0%, #d0dce6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .game-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            inset: 0;
+        }
+        .game-thumb-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: #b0bec5;
+        }
+        .game-thumb-placeholder span { font-size: 11px; font-weight: 600; font-family: 'Montserrat', sans-serif; }
+
+        .fav-btn {
+            position: absolute;
+            top: 8px; right: 8px;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            color: #ccc;
+            transition: 0.2s;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+        }
+        .fav-btn:hover { color: #e74c3c; transform: scale(1.15); }
+        .fav-btn.active { color: #e74c3c; }
+
+        .game-body {
+            padding: 13px 14px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+        .game-title { font-size: 13px; font-weight: 700; color: #023e50; line-height: 1.3; }
+        .game-desc { font-size: 11px; color: #666; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .game-meta { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+        .game-tag {
+            background: #e9eff5;
+            color: #023e50;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .game-tag.reward { background: #e8f5e9; color: #2e7d32; }
+        .game-tag.hashtag { background: #eef7fb; color: #0099cc; }
+
+        .empty-search { text-align: center; padding: 60px 20px; color: #8e9fae; font-size: 15px; font-weight: 600; grid-column: 1/-1; }
+
+        /* ── DETAIL MODAL ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(2,62,80,0.55);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 28px;
+            width: 90%;
+            max-width: 560px;
+            max-height: 88vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.22);
+            animation: modalPop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes modalPop { from{opacity:0;transform:scale(0.85);} to{opacity:1;transform:scale(1);} }
+        .modal-close {
+            position: absolute;
+            top: 14px; right: 14px;
+            background: #e9eff5;
+            border: none;
+            border-radius: 50%;
+            width: 34px; height: 34px;
+            cursor: pointer;
+            font-size: 15px;
+            color: #023e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            z-index: 10;
+        }
+        .modal-close:hover { background: #0099cc; color: #fff; }
+
+        .detail-thumb {
+            width: 100%;
+            aspect-ratio: 16/7;
+            background: linear-gradient(135deg, #e9eff5, #c8d8e4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 28px 28px 0 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .detail-thumb img { width:100%; height:100%; object-fit:cover; }
+        .detail-thumb-placeholder { display:flex;flex-direction:column;align-items:center;gap:6px;color:#b0bec5; }
+        .detail-thumb-placeholder span { font-size:13px;font-weight:600;font-family:'Montserrat',sans-serif; }
+        .detail-body { padding: 24px 28px 30px; }
+        .detail-title { font-size: 22px; font-weight: 700; color: #023e50; margin-bottom: 8px; }
+        .detail-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+        .detail-tag { padding: 5px 13px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+        .detail-tag.ht { background: #eef7fb; color: #0099cc; }
+        .detail-tag.rw { background: #e8f5e9; color: #2e7d32; }
+        .detail-tag.gn { background: #e9eff5; color: #023e50; }
+        .detail-desc { font-size: 14px; color: #444; line-height: 1.65; margin-bottom: 20px; }
+        .detail-rules { background: #f7f9fb; border-radius: 16px; padding: 16px 20px; margin-bottom: 20px; }
+        .detail-rules h4 { font-size: 13px; font-weight: 700; color: #023e50; margin-bottom: 8px; }
+        .detail-rules li { font-size: 13px; color: #555; line-height: 1.7; margin-left: 16px; }
+        .start-btn {
+            width: 100%;
+            height: 52px;
+            background: linear-gradient(90deg, #023e50, #0099cc);
+            border: none;
+            border-radius: 16px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .start-btn:hover { box-shadow: 0 8px 24px rgba(0,153,204,0.3); transform: translateY(-2px); }
+
+        h1 { opacity:0; animation: cardSlideIn 0.4s 0s ease forwards; }
+        .games-toolbar { opacity:0; animation: cardSlideIn 0.4s 0.07s ease forwards; }
+
+        @media (max-width: 1100px) { .games-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 860px)  { .games-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 600px)  { .games-grid { grid-template-columns: repeat(2, 1fr); } }
+        
+    </style>
+</head>
+<body>
+    <header class="global-header">
+        <div class="header-left"><div class="brand"><i class="fa-solid fa-graduation-cap"></i><span>RootRy</span></div></div>
+        <div class="header-center">
+            <div class="user-info">
+                <img src="" alt="Аватар" id="headerAvatar" class="avatar">
+                <span id="headerUsername" class="username">Загрузка...</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="balance-box"><i class="fa-solid fa-coins"></i><span id="userBalance">0</span> <small>монет</small></div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="app-window">
+            <h1>Мини-игры</h1>
+            <div class="games-toolbar">
+                <div class="search-box" style="margin-bottom:0;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="gameSearch" placeholder="Поиск по названию...">
+                </div>
+                <div style="position:relative;">
+                    <button class="filter-btn" id="filterBtn" onclick="toggleTagDropdown()">
+                        <i class="fa-solid fa-tag"></i> Фильтр по темам
+                        <div class="filter-dot"></div>
+                    </button>
+                    <div class="tag-dropdown" id="tagDropdown">
+                        <div class="tag-dropdown-title">Выбери хэштег</div>
+                        <div class="tag-cloud" id="tagCloud"></div>
+                        <button class="tag-clear" onclick="clearTags()">✕ Сбросить фильтр</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Любимые игры -->
+            <div id="favSection" style="display:none;">
+                <div class="games-section-title">❤️ Любимые игры</div>
+                <div class="games-grid" id="favGrid"></div>
+            </div>
+
+            <!-- Все игры -->
+            <div class="games-section-title" id="allGamesLabel">Все игры</div>
+            <div class="games-grid" id="gamesGrid"></div>
+        </section>
+    </main>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeDetail()"><i class="fa-solid fa-xmark"></i></button>
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <nav class="bottom-tabbar">
+        <a href="games.html" class="tab-item active"><i class="fa-solid fa-gamepad"></i><span>Игры</span></a>
+        <a href="shop.html" class="tab-item"><i class="fa-solid fa-store"></i><span>Магазин</span></a>
+        <a href="leaderboard.html" class="tab-item"><i class="fa-solid fa-trophy"></i><span>Топы</span></a>
+        <a href="profile.html" class="tab-item"><i class="fa-solid fa-user"></i><span>Профиль</span></a>
+        <a href="tests.html" class="tab-item"><i class="fa-solid fa-file-invoice"></i><span>Тесты</span></a>
+        <a href="tree.html" class="tab-item"><i class="fa-solid fa-diagram-project"></i><span>Дерево</span></a>
+        <a href="authors.html" class="tab-item"><i class="fa-solid fa-users"></i><span>Авторы</span></a>
+    </nav>
+
+    <script src="api.js"></script>
+    <script>
+    // Fallback if api.js not loaded
+    if (typeof initHeader === 'undefined') { function initHeader(){} }
+
+    initHeader();
+
+    const GAMES_DATA = [
+        {
+            id: 'comma_ninja',
+            title: '«Запятая-ниндзя»',
+            icon: '🥷',
+            image: 'img/game_comma_ninja.png',
+            desc: 'Свайпом разруби предложение в правильных местах! Аркада по пунктуации в стиле Fruit Ninja.',
+            fullDesc: 'На экране снизу вверх вылетают длинные предложения с причастными оборотами, вводными словами и однородными членами. Свайпни по предложению ровно там, где должна стоять запятая, двоеточие или тире. Ошибёшься — потеряешь жизнь!',
+            rules: [
+                'Свайп в месте, где нужна запятая — правильно!',
+                'Знак там, где он не нужен — минус жизнь',
+                'У тебя 3 жизни на раунд',
+                'Побей рекорд по количеству правильных разрубов'
+            ],
+            tags: ['Аркада', '+60 монет'],
+            hashtags: ['#пунктуация', '#синтаксис', '#запятая', '#аркада'],
+            file: 'game_comma_ninja.html'
+        },
+        {
+            id: 'word_alchemist',
+            title: '«Алхимик слов»',
+            icon: '⚗️',
+            image: 'img/game_word_alchemist.png',
+            desc: 'Собирай слова из падающих морфем! Головоломка в стиле Тетриса про словообразование.',
+            fullDesc: 'В твоём распоряжении падающие блоки с приставками, корнями, суффиксами и окончаниями. Комбинируй их так, чтобы получались реальные русские слова. На старших уровнях нужно собирать слова по заданным схемам!',
+            rules: [
+                'Соединяй морфемы в правильном порядке',
+                'Получившееся слово должно существовать в русском языке',
+                'На уровнях 3+ нужно следовать заданной схеме',
+                'Блоки падают быстрее с каждым уровнем'
+            ],
+            tags: ['Головоломка', '+70 монет'],
+            hashtags: ['#морфемика', '#словообразование', '#морфология', '#тетрис'],
+            file: 'game_word_alchemist.html'
+        },
+        {
+            id: 'stress_space',
+            title: '«Ударный космос»',
+            icon: '🚀',
+            image: 'img/game_stress_space.png',
+            desc: 'Уничтожай астероиды-слова! Стреляй лазером точно в ударную гласную.',
+            fullDesc: 'Управляй космическим кораблём — на тебя летят астероиды с трудными словами (ЖАЛЮЗИ, КАТАЛОГ, ЗВОНИТ, ТВОРОГ). Все гласные подсвечены. Выстрели лазером ровно в ту, на которую падает правильное ударение. Серия правильных ударений даёт защитный щит!',
+            rules: [
+                'Выбери гласную с правильным ударением',
+                'Серия из 3 правильных ответов подряд — щит',
+                'Щит поглощает один неправильный ответ',
+                'Слова из орфоэпического словника ЕГЭ'
+            ],
+            tags: ['Шутер', '+60 монет'],
+            hashtags: ['#ударение', '#орфоэпия', '#ЕГЭ', '#космос'],
+            file: 'game_stress_space.html'
+        },
+        {
+            id: 'detective_case',
+            title: '«Детектив Падеж»',
+            icon: '🕵️',
+            image: 'img/game_detective_case.png',
+            desc: 'Детективный квест! Вставь слова в правильном падеже, чтобы раскрыть дело.',
+            fullDesc: 'Ты — детектив. Чтобы получить показания свидетеля или открыть кодовый замок, нужно вставить в текст слова в правильном падеже, числе или роде. Например: «с пятьюстами шестьюдесятью тремя рублями». Ошибка пускает тебя по ложному следу!',
+            rules: [
+                'Вставь слово в правильной форме падежа',
+                '10 заданий — 10 улик для раскрытия дела',
+                'Ошибка меняет ход следствия',
+                'Сложные числительные и прилагательные'
+            ],
+            tags: ['Квест', '+80 монет'],
+            hashtags: ['#падеж', '#склонение', '#морфология', '#детектив'],
+            file: 'game_detective_case.html'
+        },
+        {
+            id: 'minefield',
+            title: '«Минное поле»',
+            icon: '💣',
+            image: 'img/game_minefield.png',
+            desc: 'Перейди пропасть по плитам с правильными словами. Ошибёшься — упадёшь в лаву!',
+            fullDesc: 'Перед тобой пропасть. На каждой плите — слово (Н/НН, чередующиеся корни, ЖИ-ШИ и другие правила). Наступать можно только на плиты с правильным написанием — плиты с ошибками проваливаются в лаву. Чем дальше — тем сложнее!',
+            rules: [
+                'Наступай только на плиты с правильным словом',
+                'Плита с ошибкой — лава, конец раунда',
+                'Уровни: Н/НН, чередующиеся корни, ЖИ-ШИ',
+                '3 жизни на всё прохождение'
+            ],
+            tags: ['Платформер', '+70 монет'],
+            hashtags: ['#орфография', '#НиНН', '#исключения', '#платформер'],
+            file: 'game_minefield.html'
+        }
+    ];
+
+    let favorites = JSON.parse(localStorage.getItem('rootry_favs_v2') || '[]');
+    let activeTag = null;
+
+    const allTags = [...new Set(GAMES_DATA.flatMap(g => g.hashtags))].sort();
+
+    function init() {
+        buildTagCloud();
+        renderAll();
+        document.getElementById('gameSearch').addEventListener('input', renderAll);
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#filterBtn') && !e.target.closest('#tagDropdown')) {
+                document.getElementById('tagDropdown').classList.remove('open');
+            }
+        });
+    }
+
+    function buildTagCloud() {
+        const cloud = document.getElementById('tagCloud');
+        cloud.innerHTML = '';
+        allTags.forEach(tag => {
+            const chip = document.createElement('button');
+            chip.className = 'tag-chip' + (activeTag === tag ? ' active' : '');
+            chip.textContent = tag;
+            chip.onclick = () => selectTag(tag);
+            cloud.appendChild(chip);
+        });
+    }
+
+    function selectTag(tag) {
+        activeTag = (activeTag === tag) ? null : tag;
+        buildTagCloud();
+        updateFilterBtn();
+        document.getElementById('tagDropdown').classList.remove('open');
+        renderAll();
+    }
+
+    function clearTags() {
+        activeTag = null;
+        buildTagCloud();
+        updateFilterBtn();
+        document.getElementById('tagDropdown').classList.remove('open');
+        renderAll();
+    }
+
+    function updateFilterBtn() {
+        const btn = document.getElementById('filterBtn');
+        btn.classList.toggle('has-filter', !!activeTag);
+        btn.querySelector('.filter-dot').style.display = activeTag ? 'block' : 'none';
+    }
+
+    function toggleTagDropdown() {
+        document.getElementById('tagDropdown').classList.toggle('open');
+    }
+
+    function isFav(id) { return favorites.includes(id); }
+
+    function toggleFav(e, id) {
+        e.stopPropagation();
+        if (isFav(id)) {
+            favorites = favorites.filter(f => f !== id);
+        } else {
+            favorites.unshift(id);
+        }
+        localStorage.setItem('rootry_favs_v2', JSON.stringify(favorites));
+        renderAll();
+    }
+
+    function renderAll() {
+        const q = document.getElementById('gameSearch').value.toLowerCase().trim();
+        let filtered = GAMES_DATA.filter(g => {
+            const matchSearch = !q || g.title.toLowerCase().includes(q) || g.hashtags.some(h => h.includes(q));
+            const matchTag = !activeTag || g.hashtags.includes(activeTag);
+            return matchSearch && matchTag;
+        });
+
+        const favGames = filtered.filter(g => isFav(g.id));
+        const restGames = filtered.filter(g => !isFav(g.id));
+
+        const favSection = document.getElementById('favSection');
+        const favGrid = document.getElementById('favGrid');
+        if (favGames.length > 0) {
+            favSection.style.display = '';
+            favGrid.innerHTML = '';
+            favGames.forEach((g, i) => favGrid.appendChild(buildCard(g, i)));
+        } else {
+            favSection.style.display = 'none';
+        }
+
+        const grid = document.getElementById('gamesGrid');
+        grid.innerHTML = '';
+        if (restGames.length === 0 && favGames.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'empty-search';
+            empty.innerHTML = '<i class="fa-solid fa-search" style="font-size:32px;display:block;margin-bottom:10px;"></i>Игры не найдены';
+            grid.appendChild(empty);
+        } else {
+            restGames.forEach((g, i) => grid.appendChild(buildCard(g, i)));
+        }
+        document.getElementById('allGamesLabel').style.display = restGames.length > 0 ? '' : 'none';
+    }
+
+    function buildCard(g, idx) {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.style.animationDelay = (idx * 0.06) + 's';
+        card.onclick = () => openDetail(g.id);
+
+        const favBtn = document.createElement('button');
+        favBtn.className = 'fav-btn' + (isFav(g.id) ? ' active' : '');
+        favBtn.title = isFav(g.id) ? 'Убрать из избранного' : 'В избранное';
+        favBtn.innerHTML = `<i class="fa-${isFav(g.id) ? 'solid' : 'regular'} fa-heart"></i>`;
+        favBtn.onclick = (e) => toggleFav(e, g.id);
+
+        const thumb = document.createElement('div');
+        thumb.className = 'game-thumb';
+
+        const img = document.createElement('img');
+        img.src = g.image;
+        img.alt = '';
+        img.onerror = () => {
+            img.style.display = 'none';
+            const ph = document.createElement('div');
+            ph.className = 'game-thumb-placeholder';
+            const iconSpan = document.createElement('span');
+            iconSpan.style.fontSize = '36px';
+            iconSpan.textContent = g.icon;
+            const lblSpan = document.createElement('span');
+            lblSpan.textContent = 'Изображение';
+            ph.appendChild(iconSpan);
+            ph.appendChild(lblSpan);
+            thumb.insertBefore(ph, thumb.firstChild);
+        };
+        thumb.appendChild(img);
+        thumb.appendChild(favBtn);
+
+        const body = document.createElement('div');
+        body.className = 'game-body';
+
+        const title = document.createElement('div');
+        title.className = 'game-title';
+        title.textContent = g.title;
+
+        const desc = document.createElement('div');
+        desc.className = 'game-desc';
+        desc.textContent = g.desc;
+
+        const meta = document.createElement('div');
+        meta.className = 'game-meta';
+        g.tags.forEach(t => {
+            const span = document.createElement('span');
+            span.className = 'game-tag' + (t.includes('монет') || t.includes('XP') ? ' reward' : '');
+            span.textContent = t;
+            meta.appendChild(span);
+        });
+        g.hashtags.slice(0, 2).forEach(ht => {
+            const span = document.createElement('span');
+            span.className = 'game-tag hashtag';
+            span.textContent = ht;
+            meta.appendChild(span);
+        });
+
+        body.appendChild(title);
+        body.appendChild(desc);
+        body.appendChild(meta);
+        card.appendChild(thumb);
+        card.appendChild(body);
+        return card;
+    }
+
+    // ─── DETAIL MODAL ─────────────────────────────────────────
+    function openDetail(id) {
+        const g = GAMES_DATA.find(x => x.id === id);
+        if (!g) return;
+
+        const c = document.getElementById('detailContent');
+        c.innerHTML = '';
+
+        const thumbDiv = document.createElement('div');
+        thumbDiv.className = 'detail-thumb';
+        const img = document.createElement('img');
+        img.src = g.image;
+        img.alt = '';
+        img.onerror = () => {
+            img.style.display = 'none';
+            const ph = document.createElement('div');
+            ph.className = 'detail-thumb-placeholder';
+            const iconSpan = document.createElement('span');
+            iconSpan.style.fontSize = '56px';
+            iconSpan.textContent = g.icon;
+            const lblSpan = document.createElement('span');
+            lblSpan.textContent = 'Изображение';
+            ph.appendChild(iconSpan);
+            ph.appendChild(lblSpan);
+            thumbDiv.appendChild(ph);
+        };
+        thumbDiv.appendChild(img);
+        c.appendChild(thumbDiv);
+
+        const body = document.createElement('div');
+        body.className = 'detail-body';
+        body.innerHTML = `
+            <div class="detail-title">${g.title}</div>
+            <div class="detail-tags">
+                ${g.hashtags.map(ht => `<span class="detail-tag ht">${ht}</span>`).join('')}
+                ${g.tags.map(t => `<span class="detail-tag rw">${t}</span>`).join('')}
+            </div>
+            <div class="detail-desc">${g.fullDesc}</div>
+            <div class="detail-rules">
+                <h4><i class="fa-solid fa-circle-info" style="color:#0099cc;margin-right:6px;"></i>Правила</h4>
+                <ul>${g.rules.map(r => `<li>${r}</li>`).join('')}</ul>
+            </div>
+        `;
+
+        const startBtn = document.createElement('button');
+        startBtn.className = 'start-btn';
+        startBtn.innerHTML = `<i class="fa-solid fa-play"></i> Начать игру`;
+        startBtn.onclick = () => { window.location.href = g.file; };
+        body.appendChild(startBtn);
+        c.appendChild(body);
+
+        document.getElementById('detailModal').classList.add('open');
+    }
+
+    function closeDetail() {
+        document.getElementById('detailModal').classList.remove('open');
+    }
+
+    init();
+    </script>
+</body>
+</html>
