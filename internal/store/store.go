@@ -194,7 +194,13 @@ func (s *Store) CreateUser(username, nickname, password string) (*models.User, e
 		// unique violation → conflict
 		return nil, fmt.Errorf("conflict")
 	}
-	return s.GetUserByUsername(username)
+	
+	// ИСПРАВЛЕННЫЙ БЛОК: правильно обрабатываем true/false и превращаем в ошибку
+	user, ok := s.GetUserByUsername(username)
+	if !ok {
+		return nil, fmt.Errorf("failed to retrieve created user")
+	}
+	return user, nil
 }
 
 func (s *Store) GetUserByUsername(username string) (*models.User, bool) {
