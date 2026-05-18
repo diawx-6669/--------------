@@ -1,153 +1,771 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RootRy | Тесты КСПОЯ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 512'%3E%3Cpath fill='%230099cc' d='M622.3 162.4l-296-120c-16.5-6.7-35.1-6.7-51.6 0l-296 120c-17.2 7-20.1 29.5-4.8 39.4l112 72.3c2.4 1.5 5.2 2.3 8 2.3H504c2.8 0 5.6-.8 8-2.3l112-72.3c15.2-10 12.3-32.4-4.8-39.4zM532.7 301.9l-20.7 13.4c-6 3.9-13 6-20.1 6H148.1c-7.1 0-14.1-2.1-20.1-6l-20.7-13.4c-4.4-2.9-10.3-1.6-13.2 2.9l-21.3 32.8c-4.6 7.1-1.6 16.5 6.2 19.8l197.4 82.5c24.6 10.3 52.6 10.3 77.2 0l197.4-82.5c7.8-3.3 10.8-12.7 6.2-19.8l-21.3-32.8c-2.9-4.5-8.8-5.8-13.2-2.9z'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 512'%3E%3Cpath fill='%230099cc' d='M622.3 162.4l-296-120c-16.5-6.7-35.1-6.7-51.6 0l-296 120c-17.2 7-20.1 29.5-4.8 39.4l112 72.3c2.4 1.5 5.2 2.3 8 2.3H504c2.8 0 5.6-.8 8-2.3l112-72.3c15.2-10 12.3-32.4-4.8-39.4zM532.7 301.9l-20.7 13.4c-6 3.9-13 6-20.1 6H148.1c-7.1 0-14.1-2.1-20.1-6l-20.7-13.4c-4.4-2.9-10.3-1.6-13.2 2.9l-21.3 32.8c-4.6 7.1-1.6 16.5 6.2 19.8l197.4 82.5c24.6 10.3 52.6 10.3 77.2 0l197.4-82.5c7.8-3.3 10.8-12.7 6.2-19.8l-21.3-32.8c-2.9-4.5-8.8-5.8-13.2-2.9z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="home-style.css">
     <style>
-        /* Scroll-in animation */
-        .app-window > * { opacity:0; transform:translateY(18px); animation: slideUp 0.4s ease forwards; }
-        .app-window > *:nth-child(1){ animation-delay:0.05s; }
-        .app-window > *:nth-child(2){ animation-delay:0.12s; }
-        @keyframes slideUp { to { opacity:1; transform:translateY(0); } }
+        /* ── Page Layout ── */
+        body {
+            background: #e9eff5;
+        }
 
-        .test-start-card { background:#fff; border-radius:30px; padding:40px; max-width:700px; box-shadow:0 15px 40px rgba(0,0,0,0.06); margin-bottom:20px; }
-        .level-badges { display:flex; gap:10px; flex-wrap:wrap; margin:15px 0; }
-        .level-badge { padding:8px 16px; border-radius:12px; font-size:12px; font-weight:700; }
-        .level-badge.a1{ background:#e9eff5; color:#8e9fae; }
-        .level-badge.a2{ background:#e8f5e9; color:#2e7d32; }
-        .level-badge.b1{ background:#e8eaf6; color:#283593; }
-        .level-badge.b2{ background:#ede7f6; color:#6a1b9a; }
-        .level-badge.c1{ background:#fff8e1; color:#e65100; }
-        .level-badge.c2{ background:linear-gradient(90deg,#ff6b6b,#feca57,#48dbfb,#ff9ff3); color:#fff; text-shadow:0 1px 3px rgba(0,0,0,0.3); }
-        .start-test-btn { margin-top:20px; height:52px; padding:0 40px; background:linear-gradient(90deg,#023e50,#0099cc); border:none; border-radius:16px; color:#fff; font-size:16px; font-weight:700; cursor:pointer; font-family:'Montserrat',sans-serif; transition:0.3s; }
-        .start-test-btn:hover { box-shadow:0 8px 25px rgba(0,153,204,0.3); transform:translateY(-2px); }
+        .main-content {
+            padding: 0;
+        }
 
-        .test-ui { display:none; }
-        .test-ui.active { display:block; }
+        .kspoя-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: 0 16px 30px;
+        }
 
-        .test-header { background:#fff; border-radius:20px; padding:18px 25px; max-width:700px; margin-bottom:20px; box-shadow:0 5px 20px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; }
-        .test-progress-text { font-size:14px; font-weight:700; color:#023e50; }
-        /* Fix: timer green when time is plenty, red when low */
-        .test-timer { font-size:18px; font-weight:700; color:#2ecc71; display:flex; align-items:center; gap:6px; }
-        .test-timer.urgent { color:#e74c3c; }
-        .test-progress-bar-wrap { margin-top:8px; height:4px; background:#e9eff5; border-radius:4px; overflow:hidden; }
-        .test-progress-bar-fill { height:100%; background:linear-gradient(90deg,#0099cc,#023e50); transition:0.4s; }
+        .kspoя-wrap h1 {
+            width: 100%;
+            max-width: 720px;
+            color: #023e50;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: left;
+        }
 
-        .test-question-card { background:#fff; border-radius:24px; padding:32px 35px; max-width:700px; box-shadow:0 10px 30px rgba(0,0,0,0.06); margin-bottom:20px; animation: slideUp 0.3s ease; }
-        .test-q-num { font-size:12px; color:#8e9fae; font-weight:700; text-transform:uppercase; margin-bottom:10px; }
-        .test-q-text { font-size:18px; font-weight:700; color:#023e50; line-height:1.5; margin-bottom:20px; }
-        .test-options { display:flex; flex-direction:column; gap:10px; }
-        .test-opt { padding:14px 20px; border:2px solid #e9eff5; border-radius:14px; background:#fff; font-size:14px; font-weight:600; color:#023e50; cursor:pointer; text-align:left; font-family:'Montserrat',sans-serif; transition:0.2s; }
-        .test-opt:hover:not(:disabled) { border-color:#0099cc; background:#f0faff; }
-        .test-opt.selected { border-color:#0099cc; background:#e8f4ff; }
-        .test-opt.correct { border-color:#2ecc71 !important; background:#e8fdf0 !important; color:#1a7a42 !important; }
-        .test-opt.wrong   { border-color:#e74c3c !important; background:#fdf0f0 !important; color:#a93226 !important; }
-        .test-opt:disabled { cursor:default; }
+        /* ── Start Screen ── */
+        .start-card {
+            background: #fff;
+            border-radius: 28px;
+            padding: 36px 40px;
+            max-width: 720px;
+            width: 100%;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.07);
+            animation: fadeUp 0.5s ease forwards;
+        }
 
-        .test-nav { display:flex; max-width:700px; margin-bottom:20px; }
-        .test-next-btn { flex:1; height:48px; background:linear-gradient(90deg,#023e50,#0099cc); border:none; border-radius:14px; color:#fff; font-size:15px; font-weight:700; cursor:pointer; font-family:'Montserrat',sans-serif; transition:0.2s; }
-        .test-next-btn:hover:not(:disabled) { box-shadow:0 5px 15px rgba(0,153,204,0.3); }
-        .test-next-btn:disabled { opacity:0.4; cursor:not-allowed; }
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
 
-        .test-result-card { background:#fff; border-radius:30px; padding:45px; max-width:700px; text-align:center; box-shadow:0 15px 40px rgba(0,0,0,0.06); animation: fadeInUp 0.5s ease; }
-        @keyframes fadeInUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
-        .test-result-score { font-size:72px; font-weight:700; color:#0099cc; }
-        .test-result-level { font-size:24px; font-weight:700; margin:10px 0; }
-        .test-result-badge { font-size:64px; margin:15px 0; animation: popBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.3s both; }
-        @keyframes popBounce { 0%{transform:scale(0)rotate(-15deg);} 80%{transform:scale(1.1)rotate(3deg);} 100%{transform:scale(1)rotate(0);} }
-        .test-result-details { font-size:14px; color:#666; margin-bottom:20px; }
-        .test-rewards { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin:15px 0; }
-        .reward-pill { background:#e9eff5; padding:10px 18px; border-radius:14px; font-size:14px; font-weight:700; color:#023e50; display:flex; align-items:center; gap:8px; }
-        .retry-btn { height:48px; padding:0 35px; background:linear-gradient(90deg,#023e50,#0099cc); border:none; border-radius:14px; color:#fff; font-size:15px; font-weight:700; cursor:pointer; font-family:'Montserrat',sans-serif; margin-top:20px; transition:0.2s; }
-        .retry-btn:hover { box-shadow:0 5px 15px rgba(0,153,204,0.3); transform:translateY(-2px); }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-        .anticheat-warning { position:fixed; inset:0; background:rgba(231,76,60,0.96); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; color:#fff; text-align:center; padding:40px; }
-        .anticheat-warning.show { display:flex; }
-        .anticheat-warning h2 { font-size:28px; font-weight:700; margin-bottom:15px; }
-        .anticheat-warning p { font-size:16px; opacity:0.9; line-height:1.6; }
-        .anticheat-btn { margin-top:25px; padding:14px 35px; background:#fff; color:#e74c3c; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; font-family:'Montserrat',sans-serif; }
+        .start-hero {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 22px;
+        }
+
+        .start-icon {
+            width: 58px;
+            height: 58px;
+            background: linear-gradient(135deg, #023e50, #0099cc);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+
+        .start-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #023e50;
+            margin-bottom: 6px;
+        }
+
+        .start-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.7;
+        }
+
+        /* Badge level grid */
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 18px 0;
+        }
+
+        .level-item {
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .level-item .badge-icon {
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+
+        .level-item .level-text {
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .level-item .level-score {
+            font-size: 10px;
+            opacity: 0.75;
+            margin-top: 1px;
+        }
+
+        .li-a1 {
+            background: #f0f4f8;
+            color: #6b7c8d;
+        }
+
+        .li-a2 {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .li-b1 {
+            background: #e8eaf6;
+            color: #283593;
+        }
+
+        .li-b2 {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .li-c1 {
+            background: #fff8e1;
+            color: #b45309;
+        }
+
+        .li-c2 {
+            background: linear-gradient(135deg, #fff0fb, #f0f8ff);
+            border: 1.5px solid #d0b0ff;
+        }
+
+        .li-c2 .level-text {
+            background: linear-gradient(90deg, #a855f7, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .anticheat-strip {
+            background: #fff3e0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 12px;
+            color: #c2410c;
+            font-weight: 600;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .start-btn {
+            width: 100%;
+            height: 52px;
+            background: linear-gradient(90deg, #023e50, #0099cc);
+            border: none;
+            border-radius: 16px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .start-btn:hover {
+            box-shadow: 0 8px 25px rgba(0, 153, 204, 0.35);
+            transform: translateY(-2px);
+        }
+
+        /* ── Test Screen ── */
+        .test-wrap {
+            width: 100%;
+            max-width: 720px;
+        }
+
+        .test-topbar {
+            background: #fff;
+            border-radius: 20px;
+            padding: 16px 22px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+        }
+
+        .test-progress-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #023e50;
+        }
+
+        .test-bar-wrap {
+            height: 5px;
+            background: #e9eff5;
+            border-radius: 5px;
+            margin-top: 7px;
+            width: 220px;
+        }
+
+        .test-bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #0099cc, #023e50);
+            transition: 0.4s;
+        }
+
+        .test-timer {
+            font-size: 17px;
+            font-weight: 700;
+            color: #2ecc71;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .test-timer.urgent {
+            color: #e74c3c;
+            animation: pulse 0.8s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .question-card {
+            background: #fff;
+            border-radius: 22px;
+            padding: 30px 32px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
+            animation: fadeUp 0.3s ease;
+        }
+
+        .q-label {
+            font-size: 11px;
+            color: #8e9fae;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .q-text {
+            font-size: 17px;
+            font-weight: 700;
+            color: #023e50;
+            line-height: 1.55;
+            margin-bottom: 22px;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .opt-btn {
+            padding: 13px 18px;
+            border: 2px solid #e9eff5;
+            border-radius: 14px;
+            background: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            color: #023e50;
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Montserrat', sans-serif;
+            transition: 0.18s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .opt-btn:hover:not(:disabled) {
+            border-color: #0099cc;
+            background: #f0faff;
+        }
+
+        .opt-btn.selected {
+            border-color: #0099cc;
+            background: #e4f4ff;
+        }
+
+        .opt-btn.correct {
+            border-color: #2ecc71 !important;
+            background: #e8fdf0 !important;
+            color: #1a7a42 !important;
+        }
+
+        .opt-btn.wrong {
+            border-color: #e74c3c !important;
+            background: #fdf0f0 !important;
+            color: #a93226 !important;
+        }
+
+        .opt-btn:disabled {
+            cursor: default;
+        }
+
+        .opt-letter {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: #e9eff5;
+            color: #0099cc;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .opt-btn.correct .opt-letter {
+            background: #d4f7e6;
+            color: #1a7a42;
+        }
+
+        .opt-btn.wrong .opt-letter {
+            background: #fde8e8;
+            color: #a93226;
+        }
+
+        .next-row {
+            width: 100%;
+        }
+
+        .next-btn {
+            width: 100%;
+            height: 48px;
+            background: linear-gradient(90deg, #023e50, #0099cc);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            transition: 0.2s;
+        }
+
+        .next-btn:hover:not(:disabled) {
+            box-shadow: 0 5px 18px rgba(0, 153, 204, 0.3);
+        }
+
+        .next-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        /* ── Result Screen ── */
+        .result-card {
+            background: #fff;
+            border-radius: 28px;
+            padding: 45px 40px;
+            max-width: 720px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.07);
+            animation: fadeUp 0.5s ease;
+        }
+
+        .result-msg {
+            font-size: 12px;
+            color: #8e9fae;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+        }
+
+        .result-score {
+            font-size: 72px;
+            font-weight: 700;
+            color: #0099cc;
+            line-height: 1;
+        }
+
+        .result-total {
+            font-size: 14px;
+            color: #8e9fae;
+            margin-top: 4px;
+        }
+
+        /* ── Badge Display ── */
+        .result-badge-wrap {
+            margin: 24px auto;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-badge-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            animation: popBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+        }
+
+        @keyframes popBounce {
+            0% {
+                transform: scale(0) rotate(-15deg);
+            }
+
+            80% {
+                transform: scale(1.1) rotate(3deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0);
+            }
+        }
+
+        /* Rainbow C2 badge */
+        .badge-c2-ring {
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            background: conic-gradient(#ff0080, #ff8c00, #ffd700, #00ff88, #00d4ff, #8000ff, #ff0080);
+            animation: spin 2s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .badge-c2-glow {
+            box-shadow: 0 0 30px 10px rgba(168, 85, 247, 0.5), 0 0 60px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Mythic C1 badge */
+        .badge-c1-ring {
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            background: conic-gradient(#ffd700, #ff6b35, #ffd700, #ff6b35, #ffd700);
+            animation: spin 3s linear infinite;
+            z-index: -1;
+        }
+
+        .badge-c1-glow {
+            box-shadow: 0 0 25px 8px rgba(251, 191, 36, 0.55), 0 0 50px 15px rgba(249, 115, 22, 0.3);
+        }
+
+        /* Legendary B2 badge */
+        .badge-b2-glow {
+            box-shadow: 0 0 20px 8px rgba(168, 85, 247, 0.4), 0 0 40px 12px rgba(139, 92, 246, 0.2);
+            animation: glowPulse 2s infinite;
+        }
+
+        @keyframes glowPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px 8px rgba(168, 85, 247, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 30px 12px rgba(168, 85, 247, 0.6);
+            }
+        }
+
+        /* Epic B1 badge */
+        .badge-b1-glow {
+            box-shadow: 0 0 15px 6px rgba(59, 130, 246, 0.4);
+            animation: glowPulse2 2.5s infinite;
+        }
+
+        @keyframes glowPulse2 {
+
+            0%,
+            100% {
+                box-shadow: 0 0 15px 6px rgba(59, 130, 246, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 25px 10px rgba(59, 130, 246, 0.5);
+            }
+        }
+
+        /* Rare A2 badge */
+        .badge-a2-glow {
+            box-shadow: 0 0 10px 4px rgba(34, 197, 94, 0.3);
+        }
+
+        /* Common A1 badge — no glow */
+
+        .result-level-label {
+            font-size: 22px;
+            font-weight: 700;
+            color: #023e50;
+            margin-bottom: 8px;
+        }
+
+        .result-level-sub {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .rewards-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+
+        .reward-chip {
+            background: #f0f4f8;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #023e50;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .retry-btn {
+            height: 48px;
+            padding: 0 36px;
+            background: linear-gradient(90deg, #023e50, #0099cc);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            margin-top: 20px;
+            transition: 0.2s;
+        }
+
+        .retry-btn:hover {
+            box-shadow: 0 5px 15px rgba(0, 153, 204, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* ── Anticheat overlay ── */
+        .anticheat-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(220, 38, 38, 0.96);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #fff;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .anticheat-overlay.show {
+            display: flex;
+        }
+
+        .anticheat-overlay h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 16px 0 10px;
+        }
+
+        .anticheat-overlay p {
+            font-size: 15px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .anticheat-btn {
+            margin-top: 24px;
+            padding: 13px 32px;
+            background: #fff;
+            color: #dc2626;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* screens */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
     </style>
 </head>
+
 <body>
-    <div class="anticheat-warning" id="anticheatWarning">
-        <i class="fa-solid fa-triangle-exclamation" style="font-size:64px;margin-bottom:20px;"></i>
+
+    <div class="anticheat-overlay" id="anticheatOverlay">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size:60px;"></i>
         <h2>Тест аннулирован!</h2>
-        <p>Вы покинули вкладку во время прохождения теста.<br>Тест засчитан как проваленный.</p>
+        <p>Вы переключили вкладку во время теста.<br>Попытка засчитана как проваленная.</p>
         <button class="anticheat-btn" onclick="cancelTest()">Вернуться к тестам</button>
     </div>
 
     <header class="global-header">
-        <div class="header-left"><div class="brand"><i class="fa-solid fa-graduation-cap"></i><span>RootRy</span></div></div>
+        <div class="header-left">
+            <div class="brand"><i class="fa-solid fa-graduation-cap"></i><span>RootRy</span></div>
+        </div>
         <div class="header-center">
             <div class="user-info">
-                <img src="" alt="Аватарка" id="headerAvatar" class="avatar">
+                <img src="" alt="Аватар" id="headerAvatar" class="avatar">
                 <span id="headerUsername" class="username">Загрузка...</span>
             </div>
         </div>
         <div class="header-right">
-            <div class="balance-box"><i class="fa-solid fa-coins"></i><span id="userBalance">0</span> <small>монет</small></div>
+            <div class="balance-box"><i class="fa-solid fa-coins"></i><span id="userBalance">0</span>
+                <small>монет</small></div>
         </div>
     </header>
 
     <main class="main-content">
-        <section class="app-window">
+        <div class="kspoя-wrap">
             <h1>Тестирование КСПОЯ</h1>
 
-            <div id="startScreen">
-                <div class="test-start-card">
-                    <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">
-                        <i class="fa-solid fa-file-invoice" style="font-size:32px;color:#0099cc;"></i>
-                        <h2 style="font-size:20px;font-weight:700;color:#023e50;">Казахстанская система проверки и оценивания языка</h2>
-                    </div>
-                    <p style="color:#666;font-size:14px;line-height:1.7;margin-bottom:15px;">
-                        Финальный экзамен по русскому языку. 10 вопросов по грамматике, орфографии и стилистике.
-                        За успешную сдачу ты получишь <strong>защищённый значок уровня</strong> — его нельзя получить промокодом.
-                    </p>
-                    <div class="level-badges">
-                        <span class="level-badge a1">A1 — 0–4</span>
-                        <span class="level-badge a2">A2 — 5–6 ⭐</span>
-                        <span class="level-badge b1">B1 — 7 🏆</span>
-                        <span class="level-badge b2">B2 — 8 👑</span>
-                        <span class="level-badge c1">C1 — 9 🌟</span>
-                        <span class="level-badge c2">C2 — 10 🌈</span>
-                    </div>
-                    <div style="background:#fff3e0;border-radius:14px;padding:14px 18px;font-size:13px;color:#e65100;font-weight:600;margin-top:12px;">
-                        <i class="fa-solid fa-eye-slash"></i> Античит: переключение вкладки немедленно аннулирует тест
-                    </div>
-                    <button class="start-test-btn" onclick="startTest()">
-                        <i class="fa-solid fa-play"></i> Начать тест
-                    </button>
-                </div>
-            </div>
-
-            <div class="test-ui" id="testScreen">
-                <div class="test-header">
-                    <div>
-                        <div class="test-progress-text">Вопрос <span id="qNum">1</span> из 10</div>
-                        <div class="test-progress-bar-wrap" style="width:220px;">
-                            <div class="test-progress-bar-fill" id="testProgressBar" style="width:10%;"></div>
+            <!-- START SCREEN -->
+            <div class="screen active" id="startScreen">
+                <div class="start-card">
+                    <div class="start-hero">
+                        <div class="start-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                        <div>
+                            <div class="start-title">Казахстанская система проверки и оценивания языка</div>
+                            <div class="start-desc">Финальный экзамен по русскому языку. Из базы 100 вопросов случайно
+                                выбираются <strong>40</strong> — за 40 минут. За прохождение выдаётся <strong>защищённый
+                                    значок уровня</strong>, недоступный через промокоды.</div>
                         </div>
                     </div>
-                    <div class="test-timer" id="testTimer">
-                        <i class="fa-solid fa-clock"></i> <span id="timerText">10:00</span>
+
+                    <div class="levels-grid">
+                        <div class="level-item li-a1">
+                            <div class="badge-icon">🎓</div>
+                            <div>
+                                <div class="level-text">A1 — Начальный</div>
+                                <div class="level-score">0–4 из 40</div>
+                            </div>
+                        </div>
+                        <div class="level-item li-a2">
+                            <div class="badge-icon">📖</div>
+                            <div>
+                                <div class="level-text">A2 — Элементарный</div>
+                                <div class="level-score">5–14 из 40</div>
+                            </div>
+                        </div>
+                        <div class="level-item li-b1">
+                            <div class="badge-icon">✨</div>
+                            <div>
+                                <div class="level-text">B1 — Средний</div>
+                                <div class="level-score">15–24 из 40</div>
+                            </div>
+                        </div>
+                        <div class="level-item li-b2">
+                            <div class="badge-icon">💎</div>
+                            <div>
+                                <div class="level-text">B2 — Выше среднего</div>
+                                <div class="level-score">25–31 из 40</div>
+                            </div>
+                        </div>
+                        <div class="level-item li-c1">
+                            <div class="badge-icon">🔮</div>
+                            <div>
+                                <div class="level-text">C1 — Продвинутый</div>
+                                <div class="level-score">32–37 из 40</div>
+                            </div>
+                        </div>
+                        <div class="level-item li-c2">
+                            <div class="badge-icon">🌈</div>
+                            <div>
+                                <div class="level-text">C2 — Мастерство</div>
+                                <div class="level-score">38–40 из 40</div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="test-question-card" id="questionCard"></div>
-                <div class="test-nav">
-                    <button class="test-next-btn" id="nextBtn" onclick="nextQuestion()" disabled>
-                        Следующий вопрос <i class="fa-solid fa-arrow-right"></i>
+
+                    <div class="anticheat-strip">
+                        <i class="fa-solid fa-eye-slash"></i>
+                        Античит: переключение вкладки немедленно аннулирует тест
+                    </div>
+
+                    <button class="start-btn" onclick="startTest()">
+                        <i class="fa-solid fa-play"></i> Начать тест (40 вопросов)
                     </button>
                 </div>
             </div>
 
-            <div class="test-ui" id="resultScreen">
-                <div class="test-result-card" id="resultCard"></div>
+            <!-- TEST SCREEN -->
+            <div class="screen" id="testScreen">
+                <div class="test-wrap">
+                    <div class="test-topbar">
+                        <div>
+                            <div class="test-progress-label">Вопрос <span id="qNum">1</span> из 40</div>
+                            <div class="test-bar-wrap">
+                                <div class="test-bar-fill" id="testBar" style="width:2.5%;"></div>
+                            </div>
+                        </div>
+                        <div class="test-timer" id="testTimer">
+                            <i class="fa-solid fa-clock"></i> <span id="timerText">40:00</span>
+                        </div>
+                    </div>
+                    <div class="question-card" id="questionCard"></div>
+                    <div class="next-row">
+                        <button class="next-btn" id="nextBtn" onclick="nextQuestion()" disabled>
+                            Следующий вопрос →
+                        </button>
+                    </div>
+                </div>
             </div>
-        </section>
+
+            <!-- RESULT SCREEN -->
+            <div class="screen" id="resultScreen">
+                <div class="result-card" id="resultCard"></div>
+            </div>
+        </div>
     </main>
 
     <nav class="bottom-tabbar">
@@ -162,244 +780,439 @@
 
     <script src="api.js"></script>
     <script>
-    initHeader();
+        initHeader();
 
-    const ALL_QUESTIONS = [
-        { q: 'Как правильно писать: «в течени__ дня»?',
-          opts: ['в течение дня','в течении дня','втечение дня','в течению дня'], correct: 0 },
-        { q: 'Выберите правильное ударение в слове «звонит»:',
-          opts: ['зво́нит','звони́т','звонит','звóнит'], correct: 1 },
-        { q: 'Какое предложение написано правильно?',
-          opts: ['Он не смог прийти, не смотря на обещание.',
-                 'Он не смог прийти, несмотря на обещание.',
-                 'Он не смог придти несмотря на обещание.',
-                 'Он несмог прийти, несмотря на обещание.'], correct: 1 },
-        { q: 'НЕ пишется слитно с прилагательным в предложении:',
-          opts: ['Этот поступок (не)красивый, а отвратительный.',
-                 '(Не)добрый взгляд хозяина смутил гостей.',
-                 'Он был вовсе (не)готов к экзамену.',
-                 'Задача оказалась (не)решённой.'], correct: 1 },
-        { q: 'Укажите слово с проверяемой безударной гласной в корне:',
-          opts: ['горизонт','растение','вокзал','хлопок'], correct: 3 },
-        { q: 'В каком слове пишется НН?',
-          opts: ['стира(н/нн)ое бельё','кова(н/нн)ый меч','броше(н/нн)ый камень','реше(н/нн)ая задача'], correct: 2 },
-        { q: 'Определите тип сказуемого: «Небо было тёмным»:',
-          opts: ['Простое глагольное','Составное глагольное','Составное именное','Нет сказуемого'], correct: 2 },
-        { q: 'Укажите строку, где все слова пишутся через дефис:',
-          opts: ['(пол)арбуза, (светло)синий, (кое)кто',
-                 '(пол)дня, по(русски), (горько)солёный',
-                 'юго(запад), мало(помалу), (пол)Москвы',
-                 '(пол)стакана, тёмно(синий), (кое)как'], correct: 2 },
-        { q: 'Как пишется: «прик_снуться»?',
-          opts: ['прикасаться (прикосн-)','прикасноться','прикостнуться','прекоснуться'], correct: 0 },
-        { q: 'Укажите предложение с пунктуационной ошибкой:',
-          opts: ['Солнце, выглянув из-за туч, осветило поле.',
-                 'Он читал, и она слушала музыку.',
-                 'Наступила осень, листья, пожелтев, начали опадать.',
-                 'Несмотря на усталость, они продолжали идти.'], correct: 2 },
-    ];
+        // ══════════════════════════════════════════════════════════════
+        //  100-QUESTION BANK
+        // ══════════════════════════════════════════════════════════════
+        const ALL_QUESTIONS = [
+            // 1-10: Правописание НЕ
+            { q: 'НЕ пишется слитно с прилагательным в предложении:', opts: ['Этот поступок (не)красивый, а отвратительный.', '(Не)добрый взгляд хозяина смутил гостей.', 'Он был вовсе (не)готов к экзамену.', 'Задача оказалась (не)решённой.'], correct: 1 },
+            { q: 'В каком предложении НЕ пишется раздельно?', opts: ['Это был (не)большой, но уютный домик.', '(Не)ряшливый вид отталкивал.', 'Он вернулся (не)скоро.', 'Работа оказалась (не)выполнена в срок.'], correct: 3 },
+            { q: 'НЕ с причастием пишется раздельно в предложении:', opts: ['(Не)скошенная трава стояла стеной.', '(Не)законченное письмо лежало на столе.', 'Задача, (не)решённая учеником, осталась.', '(Не)прочитанный роман пылился на полке.'], correct: 2 },
+            { q: 'Выберите строку, в которой все слова пишутся с НЕ слитно:', opts: ['(не)весёлый, (не)правда, (не)мог', '(не)взгоды, (не)здоровится, (не)правда', '(не)смотря на, (не)нависть, (не)думая', '(не)умело, (не)вежда, (не)решительность'], correct: 3 },
+            { q: 'Как правильно написать: «он был __добрый»?', opts: ['недобрый (прилагательное, без противопоставления)', 'не добрый (прилагательное, нейтральный контекст)', 'не-добрый', 'недобрый или не добрый — оба варианта всегда равнозначны'], correct: 0 },
+            { q: 'НЕ пишется раздельно с наречием в:', opts: ['говорил (не)громко', 'шёл (не)медленно', 'вовсе (не)хорошо', 'сделал (не)плохо'], correct: 2 },
+            { q: 'Укажите верное написание: «работа (не)зачтена»:', opts: ['незачтена — всегда слитно', 'не зачтена — краткое причастие, всегда раздельно', 'не зачтена — только если есть зависимое слово', 'незачтена — нет противопоставления'], correct: 1 },
+            { q: 'В каком случае НЕ с существительным пишется слитно?', opts: ['Это был не друг, а враг.', 'Перед нами была неправда.', 'Это было не горе, а мелкая неудача.', 'Не судьба решила за нас.'], correct: 1 },
+            { q: 'НЕ с деепричастием пишется:', opts: ['слитно всегда', 'раздельно всегда', 'слитно, если нет зависимых слов', 'слитно, если образует новое слово'], correct: 1 },
+            { q: 'Какое слово не имеет формы без НЕ?', opts: ['небольшой', 'нехороший', 'нелепый', 'ненастный'], correct: 2 },
 
-    let questions = [];
-    let userAnswers = [];
-    let currentQ = 0;
-    let timerInterval = null;
-    let timeLeft = 600;
-    let testActive = false;
+            // 11-20: Ударение
+            { q: 'Выберите правильное ударение в слове «звонит»:', opts: ['зво́нит', 'звони́т', 'звонит (оба варианта верны)', 'зво́нит (разговорный)'], correct: 1 },
+            { q: 'В каком слове ударение стоит верно?', opts: ['до́говор', 'догово́р', 'оба варианта равноправны', 'до́говор — книжный вариант'], correct: 1 },
+            { q: 'Правильное ударение в слове «каталог»:', opts: ['катало́г', 'ката́лог', 'каталог (на первый слог)', 'ката́лог — устаревшее'], correct: 0 },
+            { q: 'Как правильно ставить ударение в слове «красивее»?', opts: ['краси́вее', 'красивéе', 'краси́вее (единственный верный вариант)', 'красивéе (разговорный вариант допустим)'], correct: 0 },
+            { q: 'Ударение в слове «торты»:', opts: ['то́рты', 'торты́', 'оба варианта верны', 'то́рты — разговорный'], correct: 0 },
+            { q: 'Правильное ударение: «она́ пра́ва» или «она права́»?', opts: ['она́ пра́ва', 'она права́', 'оба варианта верны', 'зависит от смысла'], correct: 1 },
+            { q: 'Ударение в слове «аэропорты» (мн. ч.):', opts: ['аэропо́рты', 'аэропорты́', 'аэропо́рты — устаревшее', 'аэропо́рты и аэропорты́ равноправны'], correct: 1 },
+            { q: 'Верное ударение в слове «начатый»:', opts: ['нача́тый', 'на́чатый', 'начаты́й', 'на́чатый — разговорный вариант'], correct: 0 },
+            { q: 'Ударение в глаголе «облегчить»:', opts: ['облегчи́ть', 'облегча́ть', 'о́блегчить', 'облегча́ть и облегчи́ть равнозначны'], correct: 0 },
+            { q: 'Правильное ударение в слове «банты» (мн. ч.):', opts: ['ба́нты', 'банты́', 'оба варианта верны', 'ба́нты — разговорный'], correct: 0 },
 
-    function shuffle(arr) {
-        const a = [...arr];
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
+            // 21-30: Правописание приставок и корней
+            { q: 'Как правильно: «прик_снуться»?', opts: ['прикоснуться (кос- без ударения)', 'прикасаться (кас- + суффикс А)', 'прикосноться', 'прекоснуться'], correct: 0 },
+            { q: 'В каком слове пишется приставка ПРЕ-?', opts: ['(пре/при)вокзальный', '(пре/при)образить', '(пре/при)открыть дверь', '(пре/при)морский посёлок'], correct: 1 },
+            { q: 'Укажите слово с приставкой РАЗ- (не РАС-):', opts: ['ра_сказ', 'ра_бить', 'ра_сцвет', 'ра_шифровать'], correct: 1 },
+            { q: 'Правильное написание корня в слове «подр_стать»:', opts: ['подрАстать (раст- перед ст)', 'подрОстать', 'подрАщать', 'подрАстать или подрОстать — зависит от суффикса'], correct: 0 },
+            { q: 'В каком слове пишется буква О в корне?', opts: ['г_реть', 'к_снуться', 'з_ря', 'кл_нить'], correct: 2 },
+            { q: 'Выберите верное написание: «бе_порядочный»:', opts: ['беспорядочный (перед п — глухой)', 'безпорядочный', 'бес-порядочный', 'без-порядочный'], correct: 0 },
+            { q: 'Правильно написанное слово с чередованием А/О в корне:', opts: ['зарасти', 'зарОсти', 'зОрасти', 'зАросли'], correct: 3 },
+            { q: 'В каком слове пишется И в корне -БИР-/-БЕР-?', opts: ['соберу', 'выбери', 'забирать', 'берёт'], correct: 2 },
+            { q: 'Верное написание: «пр_стол»?', opts: ['прЕстол (= высший)', 'прИстол', 'прЕсталь', 'прИстал'], correct: 0 },
+            { q: 'Слово с непроверяемой гласной в корне:', opts: ['звезда', 'гористый', 'горизонт', 'вода'], correct: 2 },
+
+            // 31-40: Орфография Н/НН
+            { q: 'В каком слове пишется НН?', opts: ['стира(н/нн)ое бельё', 'кова(н/нн)ый меч', 'броше(н/нн)ый камень', 'реше(н/нн)ая задача'], correct: 2 },
+            { q: 'Укажите слово, в котором пишется Н (одна буква):', opts: ['стекля(н/нн)ый', 'дрова(н/нн)ой', 'лимо(н/нн)ый', 'оловя(н/нн)ый'], correct: 2 },
+            { q: 'НН пишется в краткой форме прилагательного в примере:', opts: ['девочка воспита(н/нн)а', 'ночь туманна', 'она образова(н/нн)а', 'дорога длинна'], correct: 2 },
+            { q: 'Выберите строку, где все слова пишутся с НН:', opts: ['ветре(н/нн)ый, оловя(н/нн)ый, дерея(н/нн)ый', 'написа(н/нн)ый, обветре(н/нн)ый, запрещё(н/нн)ый', 'искусстве(н/нн)ый, организова(н/нн)ый, квалифицирова(н/нн)ый', 'дли(н/нн)ый, ю(н/нн)ый, стари(н/нн)ый'], correct: 2 },
+            { q: 'В каком отглагольном прилагательном пишется НН?', opts: ['вяза(н/нн)ая шапка', 'рва(н/нн)ый рукав', 'куплен(н)ый билет (причастие)', 'соло(н/нн)ый огурец'], correct: 2 },
+            { q: 'Сколько Н в слове «масляный»?', opts: ['одна Н (маслян-)', 'две НН', 'зависит от контекста', 'нулевое окончание'], correct: 0 },
+            { q: 'Верное написание: «ране(н/нн)ый солдат»?', opts: ['раненый (прил., без зависимых слов — Н)', 'ранненый', 'ра(НН)еный — всегда', 'зависит от приставки'], correct: 0 },
+            { q: 'В каком примере пишется НН в кратком причастии?', opts: ['работа выполне(н/нн)а', 'задача реше(н/нн)а', 'дети воспита(н/нн)ы', 'книга прочита(н/нн)а'], correct: 0 },
+            { q: 'Слово «ветреный» пишется с:', opts: ['Н (исключение: суффикс -ен-)', 'НН', 'зависит от смысла', 'только в сочетании «ветреный день»'], correct: 0 },
+            { q: 'В каком слове НН пишется по правилу суффикса -ОНН-/-ЕНН-?', opts: ['лимонный', 'карманный', 'революционный', 'туманный'], correct: 2 },
+
+            // 41-50: Синтаксис и пунктуация
+            { q: 'Укажите предложение с пунктуационной ошибкой:', opts: ['Солнце, выглянув из-за туч, осветило поле.', 'Он читал, и она слушала музыку.', 'Наступила осень, листья, пожелтев, начали опадать.', 'Несмотря на усталость, они продолжали идти.'], correct: 2 },
+            { q: 'Где нужно поставить запятую перед КАК?', opts: ['Он поступил как настоящий друг.', 'Лес как море шумел вокруг.', 'Он быстр как ветер.', 'Задача решена как следует.'], correct: 1 },
+            { q: 'Определите тип сказуемого: «Небо было тёмным»:', opts: ['Простое глагольное', 'Составное глагольное', 'Составное именное', 'Нет сказуемого'], correct: 2 },
+            { q: 'В каком предложении тире между подлежащим и сказуемым ставится?', opts: ['Он студент нашего университета.', 'Трижды три девять.', 'Небо голубое.', 'Мать устала.'], correct: 1 },
+            { q: 'Укажите предложение с обособленным обстоятельством:', opts: ['Он шёл, опустив голову.', 'Я читал интересную книгу.', 'Они встретились вчера.', 'Она пела красиво.'], correct: 0 },
+            { q: 'Где нужна запятая при однородных членах?', opts: ['Купил хлеб и молоко.', 'Он пел и танцевал и читал.', 'Купил хлеб, молоко и масло.', 'Она смеялась и плакала.'], correct: 2 },
+            { q: 'Укажите сложноподчинённое предложение:', opts: ['Он пришёл, и мы обрадовались.', 'Она пела, а он молчал.', 'Когда наступил вечер, зажглись огни.', 'Он учится, работает и отдыхает.'], correct: 2 },
+            { q: 'В каком предложении нет грамматической основы?', opts: ['Светает.', 'Морозит.', 'Тишина в лесу.', 'Ему не спится.'], correct: 2 },
+            { q: 'Двоеточие ставится в предложении:', opts: ['Пришёл, увидел, победил.', 'Он думал: как это исправить?', 'Наступило лето — пришло тепло.', 'Ни снега, ни льда не осталось.'], correct: 1 },
+            { q: 'Укажите вводное слово (требующее запятых):', opts: ['однако', 'будто', 'словно', 'что'], correct: 0 },
+
+            // 51-60: Лексика и фразеология
+            { q: 'Какое выражение является фразеологизмом?', opts: ['сказал правду', 'бить баклуши', 'читал книгу', 'пришёл домой'], correct: 1 },
+            { q: 'Укажите пример плеоназма (речевой избыточности):', opts: ['моргать глазами', 'красивый цветок', 'быстрый бег', 'тихая музыка'], correct: 0 },
+            { q: 'Синоним к слову «апатия»:', opts: ['радость', 'безразличие', 'злость', 'тревога'], correct: 1 },
+            { q: 'Антоним к слову «лаконичный»:', opts: ['краткий', 'многословный', 'точный', 'ёмкий'], correct: 1 },
+            { q: 'Какое слово является паронимом к «одеть»?', opts: ['раздеть', 'надеть', 'носить', 'снять'], correct: 1 },
+            { q: 'В каком предложении слово употреблено в переносном значении?', opts: ['Железная ограда окружала сад.', 'Железная воля помогла ему выстоять.', 'Железная дорога прошла через лес.', 'Железный гвоздь торчал из стены.'], correct: 1 },
+            { q: 'Укажите устаревшее слово (архаизм):', opts: ['компьютер', 'десница', 'интернет', 'экран'], correct: 1 },
+            { q: 'Что такое эпитет?', opts: ['Перенос значения по сходству', 'Образное определение, характеризующее предмет', 'Противопоставление двух явлений', 'Повторение слов для усиления'], correct: 1 },
+            { q: 'Какое слово имеет иноязычное происхождение?', opts: ['берёза', 'телефон', 'изба', 'каша'], correct: 1 },
+            { q: 'Укажите правильное употребление паронима:', opts: ['Надень шапку на ребёнка.', 'Одень шапку.', 'Одень ребёнка в пальто.', 'Надень ребёнка.'], correct: 2 },
+
+            // 61-70: Морфология
+            { q: 'Укажите слово, которое не изменяется по падежам:', opts: ['пальто', 'книга', 'стол', 'окно'], correct: 0 },
+            { q: 'В каком слове суффикс -ЧИК- (а не -ЩИК-)?', opts: ['сварщик', 'грузчик', 'разведчик', 'каменщик'], correct: 1 },
+            { q: 'Определите разряд местоимения «никто»:', opts: ['Отрицательное', 'Неопределённое', 'Относительное', 'Вопросительное'], correct: 0 },
+            { q: 'В каком существительном нулевое окончание?', opts: ['книга', 'стол', 'мышь', 'время'], correct: 1 },
+            { q: 'Укажите глагол совершенного вида:', opts: ['читать', 'прочитать', 'писать', 'думать'], correct: 1 },
+            { q: 'Степень сравнения прилагательного «наилучший»:', opts: ['Положительная', 'Сравнительная', 'Превосходная', 'Составная сравнительная'], correct: 2 },
+            { q: 'Какое числительное является порядковым?', opts: ['пятеро', 'пять', 'пятый', 'пятнадцать'], correct: 2 },
+            { q: 'Определите тип наречия «вдаль»:', opts: ['Наречие меры и степени', 'Наречие образа действия', 'Наречие места', 'Наречие времени'], correct: 2 },
+            { q: 'В каком слове приставка является частью корня?', opts: ['убежать', 'забыть', 'вобрать', 'забор'], correct: 3 },
+            { q: 'Укажите слово с суффиксом -ЕК- (с беглой гласной):', opts: ['замочек', 'ключик', 'домик', 'столик'], correct: 0 },
+
+            // 71-80: Правописание слитно/раздельно/дефис
+            { q: 'Укажите строку, где все слова пишутся через дефис:', opts: ['(пол)арбуза, (светло)синий, (кое)кто', '(пол)дня, по(русски), (горько)солёный', 'юго(запад), мало(помалу), (пол)Москвы', '(пол)стакана, тёмно(синий), (кое)как'], correct: 2 },
+            { q: 'Как пишется «(в)течение дня»?', opts: ['в течение (предлог — раздельно)', 'втечение', 'в течении', 'втечении'], correct: 0 },
+            { q: 'Слово «(по)этому» пишется слитно, если:', opts: ['Это союз', 'Это наречие', 'Это местоимение с предлогом', 'Стоит в начале предложения'], correct: 0 },
+            { q: 'Как пишется: «он сделал это (не)смотря на запрет»?', opts: ['несмотря на (производный предлог)', 'не смотря на', 'несмотря, на', 'не_смотря на'], correct: 0 },
+            { q: 'Правильное написание: «(в)виду» в значении «из-за»:', opts: ['ввиду (слитно — предлог)', 'в виду', 'в-виду', 'в виду (раздельно всегда)'], correct: 0 },
+            { q: 'Слово «(на)встречу» пишется раздельно, если:', opts: ['Это наречие', 'Это предлог', 'Это существительное с предлогом', 'Это союз'], correct: 2 },
+            { q: 'Как пишется «(пол)литра»?', opts: ['полтора', 'пол-литра (перед л — дефис)', 'пол литра', 'полЛитра'], correct: 1 },
+            { q: 'Верное написание: «(кое)(у)(кого)»:', opts: ['кое у кого (раздельно с предлогом)', 'коеукого', 'кое-у-кого', 'кое у-кого'], correct: 0 },
+            { q: 'Как пишется «(по)немногу»?', opts: ['понемногу (наречие, слитно)', 'по немногу', 'по-немногу', 'понемногу или по немногу — равнозначно'], correct: 0 },
+            { q: 'Верное написание «(за)то» в роли союза:', opts: ['зато (слитно)', 'за то', 'за-то', 'зависит от ударения'], correct: 0 },
+
+            // 81-90: Стилистика и культура речи
+            { q: 'Какое предложение написано правильно?', opts: ['Он не смог прийти, не смотря на обещание.', 'Он не смог прийти, несмотря на обещание.', 'Он не смог придти несмотря на обещание.', 'Он несмог прийти, несмотря на обещание.'], correct: 1 },
+            { q: 'В каком предложении нарушена норма управления?', opts: ['Согласно приказу директора.', 'Благодаря усилиям команды.', 'Согласно приказа директора.', 'Вопреки ожиданиям.'], correct: 2 },
+            { q: 'Укажите предложение без речевой ошибки:', opts: ['Он одел пальто и вышел.', 'Он надел пальто и вышел.', 'Он оделся пальто.', 'Пальто было надето на него.'], correct: 1 },
+            { q: 'Какой вариант является нормативным?', opts: ['Ложи книгу на стол.', 'Клади книгу на стол.', 'Положи книгу на стол.', 'Покладай книгу на стол.'], correct: 2 },
+            { q: 'Укажите тавтологию (повтор однокоренных слов):', opts: ['Он читал интересную книгу.', 'Рассказать рассказ.', 'Он сказал правду.', 'Работа была сделана.'], correct: 1 },
+            { q: 'Правильная форма родительного падежа мн. числа: «носки»:', opts: ['носков', 'носок (разговорно)', 'носкей', 'носоков'], correct: 0 },
+            { q: 'Верная форма: «пара ботинок» или «пара ботинков»?', opts: ['пара ботинок', 'пара ботинков', 'оба варианта верны', 'зависит от контекста'], correct: 0 },
+            { q: 'Укажите нарушение норм: неправильное образование формы слова:', opts: ['красивее', 'более красивее', 'красивейший', 'самый красивый'], correct: 1 },
+            { q: 'Какое словосочетание является плеоназмом?', opts: ['белая бумага', 'красная линия', 'главная суть', 'быстрый темп'], correct: 2 },
+            { q: 'Верная форма глагола в предложении «Нужно (ехать/едь/езжай) быстрее»:', opts: ['едь', 'езжай', 'ехай', 'поехай'], correct: 1 },
+
+            // 91-100: Комплексные задания
+            { q: 'В каком слове все буквы произносятся?', opts: ['солнце', 'сердце', 'сентябрь', 'здравствуй'], correct: 2 },
+            { q: 'Какое предложение является сложносочинённым?', opts: ['Хотя шёл дождь, они вышли гулять.', 'Он пришёл, и все обрадовались.', 'Она думала, что он придёт.', 'Когда наступила ночь, стало тихо.'], correct: 1 },
+            { q: 'Укажите слово, в котором Ь не пишется:', opts: ['мощ_', 'рож_', 'ключ_', 'тиш_'], correct: 2 },
+            { q: 'В каком слове ударная гласная O, а пишется Ё?', opts: ['подъём', 'свёкла', 'жёлтый', 'звёзды'], correct: 1 },
+            { q: 'Укажите слово с непроизносимой согласной:', opts: ['опасный', 'интересный', 'ужасный', 'грустный'], correct: 3 },
+            { q: 'Правильное написание: «в_пятых» (порядковое числительное)?', opts: ['в-пятых', 'впятых', 'в пятых', 'в пятых (всегда раздельно)'], correct: 0 },
+            { q: 'Укажите предложение с ошибкой в употреблении деепричастного оборота:', opts: ['Читая книгу, я делал заметки.', 'Прочитав книгу, мне стало интересно.', 'Подготовившись к экзамену, он сдал его хорошо.', 'Решая задачу, она не спешила.'], correct: 1 },
+            { q: 'В каком слове буква Е обозначает два звука?', opts: ['лес', 'ель', 'дело', 'перо'], correct: 1 },
+            { q: 'Укажите предложение с составным именным сказуемым:', opts: ['Он бежал быстро.', 'Он казался усталым.', 'Она пела громко.', 'Дети играли весело.'], correct: 1 },
+            { q: 'В каком предложении верно расставлены знаки препинания?', opts: ['Он сказал, что устал, и лёг спать.', 'Он сказал что устал и лёг спать.', 'Он, сказал что устал, и лёг спать.', 'Он сказал, что, устал, и лёг спать.'], correct: 0 },
+        ];
+
+        // ══════════════════════════════════════════════════════════════
+        //  LEVEL CONFIG
+        // ══════════════════════════════════════════════════════════════
+        const LEVELS = {
+            C2: { min: 38, label: 'C2 — Мастерство', badgeClass: 'c2', xp: 2000, coins: 500, color: '#a855f7' },
+            C1: { min: 32, label: 'C1 — Продвинутый', badgeClass: 'c1', xp: 1500, coins: 400, color: '#f59e0b' },
+            B2: { min: 25, label: 'B2 — Выше среднего', badgeClass: 'b2', xp: 1000, coins: 300, color: '#8b5cf6' },
+            B1: { min: 15, label: 'B1 — Средний', badgeClass: 'b1', xp: 750, coins: 200, color: '#3b82f6' },
+            A2: { min: 5, label: 'A2 — Элементарный', badgeClass: 'a2', xp: 300, coins: 80, color: '#22c55e' },
+            A1: { min: 0, label: 'A1 — Начальный', badgeClass: 'a1', xp: 0, coins: 0, color: '#8e9fae' },
+        };
+
+        // Badge image paths (placeholders — replace with real PNGs)
+        const BADGE_IMAGES = {
+            c2: 'badges/badge_c2.png',
+            c1: 'badges/badge_c1.png',
+            b2: 'badges/badge_b2.png',
+            b1: 'badges/badge_b1.png',
+            a2: 'badges/badge_a2.png',
+            a1: 'badges/badge_a1.png',
+        };
+        // Fallback emojis while real PNGs are not added
+        const BADGE_EMOJI = { c2: '🌈', c1: '🔮', b2: '💎', b1: '✨', a2: '📖', a1: '🎓' };
+
+        // ══════════════════════════════════════════════════════════════
+        //  STATE
+        // ══════════════════════════════════════════════════════════════
+        let questions = [];
+        let userAnswers = [];
+        let questionCorrectMap = []; // stores correct index for server submission order
+        let currentQ = 0;
+        let timerInterval = null;
+        let timeLeft = 40 * 60;
+        let testActive = false;
+
+        // ── Utils ──
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
         }
-        return a;
-    }
 
-    function startTest() {
-        questions = shuffle(ALL_QUESTIONS);
-        userAnswers = new Array(questions.length).fill(-1);
-        currentQ = 0;
-        timeLeft = 600;
-        testActive = true;
+        function showScreen(id) {
+            ['startScreen', 'testScreen', 'resultScreen'].forEach(s => {
+                const el = document.getElementById(s);
+                el.classList.toggle('active', el.id === id);
+            });
+        }
 
-        document.getElementById('startScreen').style.display = 'none';
-        document.getElementById('testScreen').classList.add('active');
-        document.getElementById('resultScreen').classList.remove('active');
+        function getLevel(score) {
+            if (score >= 38) return 'C2';
+            if (score >= 32) return 'C1';
+            if (score >= 25) return 'B2';
+            if (score >= 15) return 'B1';
+            if (score >= 5) return 'A2';
+            return 'A1';
+        }
 
-        renderQuestion();
-        startTimer();
-    }
-
-    function renderQuestion() {
-        const q = questions[currentQ];
-        document.getElementById('qNum').textContent = currentQ + 1;
-        document.getElementById('testProgressBar').style.width = ((currentQ + 1) / questions.length * 100) + '%';
-
-        const nextBtn = document.getElementById('nextBtn');
-        nextBtn.disabled = userAnswers[currentQ] === -1;
-        nextBtn.textContent = currentQ < questions.length - 1 ? 'Следующий вопрос →' : 'Завершить тест ✓';
-
-        // Use DOM API to avoid XSS
-        const card = document.getElementById('questionCard');
-        card.innerHTML = '';
-
-        const numDiv = document.createElement('div');
-        numDiv.className = 'test-q-num';
-        numDiv.textContent = `Вопрос ${currentQ + 1} из ${questions.length}`;
-        card.appendChild(numDiv);
-
-        const qText = document.createElement('div');
-        qText.className = 'test-q-text';
-        qText.textContent = q.q;
-        card.appendChild(qText);
-
-        const optsDiv = document.createElement('div');
-        optsDiv.className = 'test-options';
-        q.opts.forEach((opt, i) => {
-            const btn = document.createElement('button');
-            btn.className = 'test-opt' + (userAnswers[currentQ] === i ? ' selected' : '');
-            btn.disabled = userAnswers[currentQ] !== -1;
-            btn.innerHTML = `<span style="color:#0099cc;margin-right:8px;">${String.fromCharCode(65+i)}.</span>`;
-            btn.appendChild(document.createTextNode(opt));
-            btn.onclick = () => selectAnswer(i);
-            optsDiv.appendChild(btn);
-        });
-        card.appendChild(optsDiv);
-
-        if (userAnswers[currentQ] !== -1) highlightAnswers();
-    }
-
-    function selectAnswer(idx) {
-        if (userAnswers[currentQ] !== -1) return;
-        userAnswers[currentQ] = idx;
-        document.getElementById('nextBtn').disabled = false;
-        highlightAnswers();
-    }
-
-    function highlightAnswers() {
-        const q = questions[currentQ];
-        const btns = document.querySelectorAll('.test-opt');
-        btns.forEach((btn, i) => {
-            btn.disabled = true;
-            btn.classList.remove('selected');
-            if (i === q.correct) btn.classList.add('correct');
-            else if (i === userAnswers[currentQ] && i !== q.correct) btn.classList.add('wrong');
-        });
-    }
-
-    function nextQuestion() {
-        if (currentQ < questions.length - 1) {
-            currentQ++;
+        // ── Start ──
+        function startTest() {
+            questions = shuffle(ALL_QUESTIONS).slice(0, 40);
+            userAnswers = new Array(40).fill(-1);
+            currentQ = 0;
+            timeLeft = 40 * 60;
+            testActive = true;
+            showScreen('testScreen');
             renderQuestion();
-        } else {
-            finishTest();
+            startTimer();
         }
-    }
 
-    function startTimer() {
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            const min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-            const sec = (timeLeft % 60).toString().padStart(2, '0');
-            const timerEl = document.getElementById('timerText');
-            const timerWrap = document.getElementById('testTimer');
-            if (timerEl) {
-                timerEl.textContent = `${min}:${sec}`;
-                // Fix: green when plenty of time, red when < 60s
-                timerWrap.className = 'test-timer' + (timeLeft < 60 ? ' urgent' : '');
-            }
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                finishTest(true);
-            }
-        }, 1000);
-    }
+        // ── Render ──
+        function renderQuestion() {
+            const q = questions[currentQ];
+            document.getElementById('qNum').textContent = currentQ + 1;
+            document.getElementById('testBar').style.width = ((currentQ + 1) / 40 * 100) + '%';
 
-    async function finishTest(timeout = false) {
-        clearInterval(timerInterval);
-        testActive = false;
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = userAnswers[currentQ] === -1;
+            nextBtn.textContent = currentQ < 39 ? 'Следующий вопрос →' : 'Завершить тест ✓';
 
-        // Count correct — raw userAnswers array sent to server as-is
-        let correct = 0;
-        questions.forEach((q, i) => {
-            if (userAnswers[i] === q.correct) correct++;
-        });
-        const total = questions.length;
+            const card = document.getElementById('questionCard');
+            card.innerHTML = '';
 
-        // Determine level client-side for display
-        let level, badge, badgeColor, xp, coins;
-        if (correct === 10)     { level='C2'; badge='🌈'; badgeColor='linear-gradient(90deg,#ff6b6b,#feca57,#48dbfb)'; xp=2000; coins=500; }
-        else if (correct === 9) { level='C1'; badge='🌟'; badgeColor='#e65100'; xp=1500; coins=400; }
-        else if (correct === 8) { level='B2'; badge='👑'; badgeColor='#fca311'; xp=1000; coins=300; }
-        else if (correct === 7) { level='B1'; badge='🏆'; badgeColor='#9c27b0'; xp=750; coins=200; }
-        else if (correct >= 5)  { level='A2'; badge='⭐'; badgeColor='#4caf50'; xp=500; coins=100; }
-        else                    { level='A1'; badge='📝'; badgeColor='#8e9fae'; xp=0; coins=0; }
+            const label = document.createElement('div');
+            label.className = 'q-label';
+            label.textContent = `Вопрос ${currentQ + 1} из 40`;
+            card.appendChild(label);
 
-        const passed = correct >= 5;
+            const qText = document.createElement('div');
+            qText.className = 'q-text';
+            qText.textContent = q.q;
+            card.appendChild(qText);
 
-        // Fix: send raw userAnswers (not a corrupted mapped array)
-        let serverResp = { badge_earned: '', new_xp: 0, new_balance: 0 };
-        try {
-            const r = await API.post('/api/test/submit', { answers: userAnswers });
-            if (r.ok) serverResp = r.data;
-        } catch(e) {}
+            const optsList = document.createElement('div');
+            optsList.className = 'options-list';
 
-        document.getElementById('testScreen').classList.remove('active');
-        document.getElementById('resultScreen').classList.add('active');
+            q.opts.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn' + (userAnswers[currentQ] === i ? ' selected' : '');
+                btn.disabled = userAnswers[currentQ] !== -1;
 
-        const msg = timeout ? '⏰ Время вышло!' : passed ? '🎉 Тест пройден!' : '📚 Нужно больше практики';
+                const letter = document.createElement('span');
+                letter.className = 'opt-letter';
+                letter.textContent = String.fromCharCode(65 + i);
+                btn.appendChild(letter);
+                btn.appendChild(document.createTextNode(opt));
+                btn.onclick = () => selectAnswer(i);
+                optsList.appendChild(btn);
+            });
+            card.appendChild(optsList);
 
-        const card = document.getElementById('resultCard');
-        card.innerHTML = '';
-
-        card.innerHTML = `
-            <p style="font-size:13px;color:#8e9fae;font-weight:700;text-transform:uppercase;letter-spacing:1px;">${msg}</p>
-            <div class="test-result-score">${correct}/${total}</div>
-            <div class="test-result-badge">${badge}</div>
-            <div class="test-result-level" style="color:${badgeColor.startsWith('linear') ? '#023e50' : badgeColor}">
-                Уровень ${level}
-            </div>
-            <div class="test-result-details">${correct} правильных из ${total}</div>
-            ${passed ? `
-            <div class="test-rewards">
-                <div class="reward-pill"><i class="fa-solid fa-star" style="color:#0099cc"></i> +${serverResp.xp_earned ?? xp} XP</div>
-                <div class="reward-pill"><i class="fa-solid fa-coins" style="color:#f39c12"></i> +${serverResp.coins_earned ?? coins} монет</div>
-                ${serverResp.badge_earned ? `<div class="reward-pill">${serverResp.badge_earned} Новый значок!</div>` : ''}
-            </div>` : '<p style="color:#e74c3c;font-size:14px;font-weight:600;margin:15px 0;">Для прохождения нужно 5+ правильных ответов</p>'}
-            <button class="retry-btn" onclick="retryTest()">
-                <i class="fa-solid fa-rotate-right"></i> Пройти снова
-            </button>
-        `;
-
-        if (serverResp.new_balance) {
-            document.getElementById('userBalance').textContent = serverResp.new_balance;
-            API.refreshUser();
+            if (userAnswers[currentQ] !== -1) highlightAnswers();
         }
-    }
 
-    function cancelTest() {
-        clearInterval(timerInterval);
-        testActive = false;
-        document.getElementById('anticheatWarning').classList.remove('show');
-        document.getElementById('testScreen').classList.remove('active');
-        document.getElementById('startScreen').style.display = '';
-    }
+        function selectAnswer(idx) {
+            if (userAnswers[currentQ] !== -1) return;
+            userAnswers[currentQ] = idx;
+            document.getElementById('nextBtn').disabled = false;
+            highlightAnswers();
+        }
 
-    function retryTest() {
-        document.getElementById('resultScreen').classList.remove('active');
-        document.getElementById('startScreen').style.display = '';
-    }
+        function highlightAnswers() {
+            const q = questions[currentQ];
+            const btns = document.querySelectorAll('.opt-btn');
+            btns.forEach((btn, i) => {
+                btn.disabled = true;
+                btn.classList.remove('selected');
+                if (i === q.correct) btn.classList.add('correct');
+                else if (i === userAnswers[currentQ] && i !== q.correct) btn.classList.add('wrong');
+            });
+        }
 
-    // Anticheat
-    document.addEventListener('visibilitychange', () => {
-        if (!testActive) return;
-        if (document.hidden) {
+        function nextQuestion() {
+            if (currentQ < 39) { currentQ++; renderQuestion(); }
+            else { finishTest(); }
+        }
+
+        // ── Timer ──
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                const sec = (timeLeft % 60).toString().padStart(2, '0');
+                const timerEl = document.getElementById('timerText');
+                const timerWrap = document.getElementById('testTimer');
+                if (timerEl) {
+                    timerEl.textContent = `${min}:${sec}`;
+                    timerWrap.className = 'test-timer' + (timeLeft < 60 ? ' urgent' : '');
+                }
+                if (timeLeft <= 0) { clearInterval(timerInterval); finishTest(true); }
+            }, 1000);
+        }
+
+        // ── Finish ──
+        async function finishTest(timeout = false) {
             clearInterval(timerInterval);
             testActive = false;
-            document.getElementById('anticheatWarning').classList.add('show');
+
+            let correct = 0;
+            questions.forEach((q, i) => { if (userAnswers[i] === q.correct) correct++; });
+
+            const levelKey = getLevel(correct);
+            const lvl = LEVELS[levelKey];
+
+            // Build answers array aligned to server's question bank
+            // We send score directly (server validates independently)
+            let serverResp = { xp_earned: lvl.xp, coins_earned: lvl.coins, badge_earned: '', new_xp: 0, new_balance: 0 };
+            try {
+                const r = await API.post('/api/test/submit', { answers: userAnswers, score: correct, level: levelKey });
+                if (r.ok) serverResp = { ...serverResp, ...r.data };
+            } catch (e) { }
+
+            showScreen('resultScreen');
+            renderResult(correct, levelKey, lvl, serverResp, timeout);
+
+            if (serverResp.new_balance) {
+                document.getElementById('userBalance').textContent = serverResp.new_balance;
+                API.refreshUser();
+            }
         }
-    });
+
+        function renderResult(correct, levelKey, lvl, serverResp, timeout) {
+            const card = document.getElementById('resultCard');
+            card.innerHTML = '';
+
+            const badgeClass = lvl.badgeClass;
+            const hasImage = false; // set true when real PNGs are placed in badges/
+            const badgeEmoji = BADGE_EMOJI[badgeClass];
+
+            // Header
+            const msgEl = document.createElement('p');
+            msgEl.className = 'result-msg';
+            msgEl.textContent = timeout ? 'Время вышло' : correct >= 5 ? 'Тест завершён' : 'Нужно больше практики';
+            card.appendChild(msgEl);
+
+            // Score
+            const scoreEl = document.createElement('div');
+            scoreEl.className = 'result-score';
+            scoreEl.textContent = correct;
+            card.appendChild(scoreEl);
+            const totalEl = document.createElement('div');
+            totalEl.className = 'result-total';
+            totalEl.textContent = `из 40 вопросов`;
+            card.appendChild(totalEl);
+
+            // Badge
+            const badgeWrap = document.createElement('div');
+            badgeWrap.className = 'result-badge-wrap';
+
+            // Add ring for C2 and C1
+            if (badgeClass === 'c2') {
+                const ring = document.createElement('div');
+                ring.className = 'badge-c2-ring';
+                badgeWrap.appendChild(ring);
+            } else if (badgeClass === 'c1') {
+                const ring = document.createElement('div');
+                ring.className = 'badge-c1-ring';
+                badgeWrap.appendChild(ring);
+            }
+
+            if (hasImage) {
+                const img = document.createElement('img');
+                img.className = `result-badge-img badge-${badgeClass}-glow`;
+                img.src = BADGE_IMAGES[badgeClass];
+                img.alt = levelKey;
+                badgeWrap.appendChild(img);
+            } else {
+                // Emoji fallback styled as circle
+                const emojiDiv = document.createElement('div');
+                emojiDiv.style.cssText = `font-size:72px;animation:popBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;display:inline-block;filter:drop-shadow(0 0 16px ${lvl.color});`;
+                emojiDiv.textContent = badgeEmoji;
+                badgeWrap.appendChild(emojiDiv);
+            }
+
+            card.appendChild(badgeWrap);
+
+            // Level label
+            const levelLabel = document.createElement('div');
+            levelLabel.className = 'result-level-label';
+            levelLabel.style.color = lvl.color;
+            levelLabel.textContent = lvl.label;
+            card.appendChild(levelLabel);
+
+            if (serverResp.badge_earned) {
+                const sub = document.createElement('div');
+                sub.className = 'result-level-sub';
+                sub.textContent = `Значок "${serverResp.badge_earned || levelKey}" добавлен в профиль!`;
+                card.appendChild(sub);
+            }
+
+            // Rewards
+            if (correct >= 5) {
+                const rewardsRow = document.createElement('div');
+                rewardsRow.className = 'rewards-row';
+                const chips = [
+                    { icon: 'fa-star', color: '#0099cc', text: `+${serverResp.xp_earned ?? lvl.xp} XP` },
+                    { icon: 'fa-coins', color: '#f59e0b', text: `+${serverResp.coins_earned ?? lvl.coins} монет` },
+                ];
+                chips.forEach(c => {
+                    const chip = document.createElement('div');
+                    chip.className = 'reward-chip';
+                    chip.innerHTML = `<i class="fa-solid ${c.icon}" style="color:${c.color}"></i>`;
+                    chip.appendChild(document.createTextNode(c.text));
+                    rewardsRow.appendChild(chip);
+                });
+                card.appendChild(rewardsRow);
+            } else {
+                const failMsg = document.createElement('p');
+                failMsg.style.cssText = 'color:#e74c3c;font-size:14px;font-weight:600;margin:12px 0;';
+                failMsg.textContent = 'Для получения награды необходимо набрать 5+ правильных ответов.';
+                card.appendChild(failMsg);
+            }
+
+            // Retry button
+            const retry = document.createElement('button');
+            retry.className = 'retry-btn';
+            retry.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Пройти снова';
+            retry.onclick = retryTest;
+            card.appendChild(retry);
+        }
+
+        function cancelTest() {
+            clearInterval(timerInterval);
+            testActive = false;
+            document.getElementById('anticheatOverlay').classList.remove('show');
+            showScreen('startScreen');
+        }
+
+        function retryTest() {
+            showScreen('startScreen');
+        }
+
+        // ── Anticheat ──
+        document.addEventListener('visibilitychange', () => {
+            if (!testActive) return;
+            if (document.hidden) {
+                clearInterval(timerInterval);
+                testActive = false;
+                document.getElementById('anticheatOverlay').classList.add('show');
+            }
+        });
     </script>
 </body>
+
 </html>
