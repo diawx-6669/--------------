@@ -1,285 +1,408 @@
 package store
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
+	"log"
 	"os"
-	"sync"
 	"time"
 
+	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 	"rootry/internal/models"
 )
 
+// Store wraps a *sql.DB and exposes the same interface the handlers expect.
 type Store struct {
-	mu          sync.Mutex
-	users       map[string]*models.User
-	usersByID   map[int64]*models.User
-	promos      map[string]*models.PromoCode
-	gameResults []models.GameResult
-	testResults []models.TestResult
-	caseResults []models.CaseResult
-	nextID      int64
-	dbPath      string
+	db *sql.DB
 }
 
-type persistData struct {
-	Users       []*models.User      `json:"users"`
-	Promos      []*models.PromoCode `json:"promos"`
-	GameResults []models.GameResult `json:"game_results"`
-	TestResults []models.TestResult `json:"test_results"`
-	CaseResults []models.CaseResult `json:"case_results"`
-	NextID      int64               `json:"next_id"`
-}
+// ── Constructor ───────────────────────────────────────────────────────────────
 
-func New(dbPath string) *Store {
-	s := &Store{
-		users:     make(map[string]*models.User),
-		usersByID: make(map[int64]*models.User),
-		promos:    make(map[string]*models.PromoCode),
-		nextID:    1,
-		dbPath:    dbPath,
+func New(_ string) *Store {
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("DATABASE_URL env var is not set")
 	}
-	s.load()
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		log.Fatalf("store: sql.Open: %v", err)
+	}
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(5 * time.Minute)
+	if err := db.Ping(); err != nil {
+		log.Fatalf("store: db.Ping: %v", err)
+	}
+	s := &Store{db: db}
 	s.seedPromos()
 	s.seedDemo()
 	return s
 }
 
+// ── Internal helpers ──────────────────────────────────────────────────────────
+
+// jsonbCol marshals a Go slice into a JSON string for a JSONB column.
+func jsonbCol(v any) string {
+	b, _ := json.Marshal(v)
+	return string(b)
+}
+
+// scanUser reads one row from the users table into a models.User.
+// The SELECT must follow the column order defined in userColumns.
+func scanUser(row interface {
+	Scan(dest ...any) error
+}) (*models.User, error) {
+	var u models.User
+	var (
+		badges, avatars, completedTopics []byte
+		promoUsed, favoriteGames         []byte
+		gamesWonTypes                    []byte
+		lastLogin, lastNickChange        sql.NullString
+		dailyTasksDate, lastDailyClaim   sql.NullString
+	)
+	err := row.Scan(
+		&u.ID, &u.Username, &u.Nickname, &u.PasswordHash,
+		&u.Balance, &u.XP, &u.Streak,
+		&lastLogin, &lastNickChange,
+		&u.IsAdmin,
+		&badges, &avatars, &u.ActiveAvatar,
+		&completedTopics, &promoUsed, &favoriteGames,
+		&dailyTasksDate, &u.DailyTasksDone,
+		&u.GamesWonToday, &gamesWonTypes,
+		&lastDailyClaim, &u.CreatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	u.LastLogin = lastLogin.String
+	u.LastNickChange = lastNickChange.String
+	u.DailyTasksDate = dailyTasksDate.String
+	u.LastDailyClaim = lastDailyClaim.String
+
+	// Unmarshal JSONB arrays
+	json.Unmarshal(badges, &u.Badges)
+	json.Unmarshal(avatars, &u.Avatars)
+	json.Unmarshal(completedTopics, &u.CompletedTopics)
+	json.Unmarshal(promoUsed, &u.PromoUsed)
+	json.Unmarshal(favoriteGames, &u.FavoriteGames)
+	json.Unmarshal(gamesWonTypes, &u.GamesWonTypes)
+
+	// Ensure nil slices become empty slices (cleaner JSON output)
+	if u.Badges == nil {
+		u.Badges = []string{}
+	}
+	if u.Avatars == nil {
+		u.Avatars = []string{"🐱"}
+	}
+	if u.CompletedTopics == nil {
+		u.CompletedTopics = []string{}
+	}
+	if u.PromoUsed == nil {
+		u.PromoUsed = []string{}
+	}
+	if u.FavoriteGames == nil {
+		u.FavoriteGames = []string{}
+	}
+	if u.GamesWonTypes == nil {
+		u.GamesWonTypes = []string{}
+	}
+	return &u, nil
+}
+
+const userSelect = `
+	SELECT id, username, nickname, password_hash,
+	       balance, xp, streak,
+	       to_char(last_login,'YYYY-MM-DD'), to_char(last_nick_change,'YYYY-MM-DD'),
+	       is_admin,
+	       badges, avatars, active_avatar,
+	       completed_topics, promo_used, favorite_games,
+	       to_char(daily_tasks_date,'YYYY-MM-DD'), daily_tasks_done,
+	       games_won_today, games_won_types,
+	       to_char(last_daily_claim,'YYYY-MM-DD'), created_at
+	FROM users`
+
+// ── Seeds ─────────────────────────────────────────────────────────────────────
+
 func (s *Store) seedDemo() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if _, ok := s.users["demo"]; !ok {
-		hash, _ := bcrypt.GenerateFromPassword([]byte("demo123"), bcrypt.DefaultCost)
-		u := &models.User{
-			ID: s.nextID, Username: "demo", Nickname: "Демо Игрок",
-			PasswordHash: string(hash), Balance: 1500, XP: 420, Streak: 7,
-			Badges: []string{"🎓", "⭐"}, Avatars: []string{"🐱"},
-			ActiveAvatar: "🐱", CompletedTopics: []string{},
-			PromoUsed: []string{}, FavoriteGames: []string{},
-			CreatedAt: time.Now(),
-		}
-		s.nextID++
-		s.users["demo"] = u
-		s.usersByID[u.ID] = u
-		go s.persist()
+	var exists bool
+	s.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM users WHERE username=$1)`, "demo").Scan(&exists)
+	if exists {
+		return
+	}
+	hash, _ := bcrypt.GenerateFromPassword([]byte("demo123"), bcrypt.DefaultCost)
+	_, err := s.db.Exec(`
+		INSERT INTO users
+		  (username, nickname, password_hash, balance, xp, streak,
+		   badges, avatars, active_avatar, completed_topics, promo_used,
+		   favorite_games, games_won_types, is_admin)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+		"demo", "Демо Игрок", string(hash), 1500, 420, 7,
+		`["🎓","⭐"]`, `["🐱"]`, "🐱",
+		`[]`, `[]`, `[]`, `[]`, false,
+	)
+	if err != nil {
+		log.Printf("seedDemo: %v", err)
 	}
 }
 
 func (s *Store) seedPromos() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
 	adminPromo := os.Getenv("ADMIN_PROMO")
 	if adminPromo == "" {
 		adminPromo = "ADMIN240411"
 	}
-	defaults := []*models.PromoCode{
-		{Code: "MEGACOINS", Reward: "coins", Value: 10000000, Uses: -1},
-		{Code: "777",       Reward: "coins", Value: 10000000, Uses: -1},
-		{Code: adminPromo,  Reward: "admin", Value: 0, Uses: 10},
+	promos := []struct {
+		code, reward string
+		value, uses  int
+	}{
+		{"MEGACOINS", "coins", 10_000_000, -1},
+		{"777", "coins", 10_000_000, -1},
+		{adminPromo, "admin", 0, 10},
 	}
-	seededCodes := make(map[string]bool)
-	for _, p := range defaults {
-		seededCodes[p.Code] = true
-		// Preserve UsedCount from persisted data so restart does not reset it
-		if existing, ok := s.promos[p.Code]; ok {
-			p.UsedCount = existing.UsedCount
-		}
-		s.promos[p.Code] = p
-	}
-	// Remove promos not in seeded list (cleanup old codes from JSON)
-	for code := range s.promos {
-		if !seededCodes[code] {
-			delete(s.promos, code)
+	for _, p := range promos {
+		_, err := s.db.Exec(`
+			INSERT INTO promos (code, reward, value, uses)
+			VALUES ($1,$2,$3,$4)
+			ON CONFLICT (code) DO NOTHING`,
+			p.code, p.reward, p.value, p.uses,
+		)
+		if err != nil {
+			log.Printf("seedPromos %s: %v", p.code, err)
 		}
 	}
 }
 
-func (s *Store) load() {
-	data, err := os.ReadFile(s.dbPath)
-	if err != nil {
-		return
-	}
-	var pd persistData
-	if err := json.Unmarshal(data, &pd); err != nil {
-		return
-	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	for _, u := range pd.Users {
-		s.users[u.Username] = u
-		s.usersByID[u.ID] = u
-	}
-	for _, p := range pd.Promos {
-		s.promos[p.Code] = p
-	}
-	s.gameResults = pd.GameResults
-	s.testResults = pd.TestResults
-	s.caseResults = pd.CaseResults
-	if pd.NextID > 0 {
-		s.nextID = pd.NextID
-	}
-}
-
-func (s *Store) persist() {
-	s.mu.Lock()
-	var users []*models.User
-	for _, u := range s.users {
-		users = append(users, u)
-	}
-	var promos []*models.PromoCode
-	for _, p := range s.promos {
-		promos = append(promos, p)
-	}
-	pd := persistData{
-		Users: users, Promos: promos,
-		GameResults: s.gameResults,
-		TestResults: s.testResults,
-		CaseResults: s.caseResults,
-		NextID:      s.nextID,
-	}
-	s.mu.Unlock()
-	data, _ := json.MarshalIndent(pd, "", "  ")
-	os.WriteFile(s.dbPath, data, 0644)
-}
+// ── Public API (same signatures as the old in-memory Store) ───────────────────
 
 func (s *Store) CreateUser(username, nickname, password string) (*models.User, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if _, ok := s.users[username]; ok {
-		return nil, os.ErrExist
-	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
-	u := &models.User{
-		ID: s.nextID, Username: username, Nickname: nickname,
-		PasswordHash: string(hash), Balance: 500, XP: 0, Streak: 0,
-		IsAdmin: false, Badges: []string{}, Avatars: []string{"🐱"},
-		ActiveAvatar: "🐱", CompletedTopics: []string{},
-		PromoUsed: []string{}, FavoriteGames: []string{},
-		CreatedAt: time.Now(),
+	row := s.db.QueryRow(`
+		INSERT INTO users
+		  (username, nickname, password_hash, balance, xp, streak,
+		   badges, avatars, active_avatar,
+		   completed_topics, promo_used, favorite_games, games_won_types)
+		VALUES ($1,$2,$3, 500,0,0, '[]','["🐱"]','🐱', '[]','[]','[]','[]')
+		RETURNING id`,
+		username, nickname, string(hash),
+	)
+	var id int64
+	if err := row.Scan(&id); err != nil {
+		// unique violation → conflict
+		return nil, fmt.Errorf("conflict")
 	}
-	s.nextID++
-	s.users[username] = u
-	s.usersByID[u.ID] = u
-	go s.persist()
-	return u, nil
+	return s.GetUserByUsername(username)
 }
 
 func (s *Store) GetUserByUsername(username string) (*models.User, bool) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	u, ok := s.users[username]
-	return u, ok
+	row := s.db.QueryRow(userSelect+` WHERE username=$1`, username)
+	u, err := scanUser(row)
+	if err != nil {
+		return nil, false
+	}
+	return u, true
 }
 
 func (s *Store) ValidatePassword(username, password string) (*models.User, bool) {
-	s.mu.Lock()
-	u, ok := s.users[username]
-	s.mu.Unlock()
+	u, ok := s.GetUserByUsername(username)
 	if !ok {
 		return nil, false
 	}
-	err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password))
-	return u, err == nil
+	if bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)) != nil {
+		return nil, false
+	}
+	return u, true
 }
 
+// UpdateUser writes all mutable user fields back to Postgres.
 func (s *Store) UpdateUser(u *models.User) {
-	s.mu.Lock()
-	s.users[u.Username] = u
-	s.usersByID[u.ID] = u
-	s.mu.Unlock()
-	go s.persist()
+	_, err := s.db.Exec(`
+		UPDATE users SET
+		  nickname         = $1,
+		  balance          = $2,
+		  xp               = $3,
+		  streak           = $4,
+		  last_login       = NULLIF($5,'')::DATE,
+		  last_nick_change = NULLIF($6,'')::DATE,
+		  is_admin         = $7,
+		  badges           = $8::JSONB,
+		  avatars          = $9::JSONB,
+		  active_avatar    = $10,
+		  completed_topics = $11::JSONB,
+		  promo_used       = $12::JSONB,
+		  favorite_games   = $13::JSONB,
+		  daily_tasks_date = NULLIF($14,'')::DATE,
+		  daily_tasks_done = $15,
+		  games_won_today  = $16,
+		  games_won_types  = $17::JSONB,
+		  last_daily_claim = NULLIF($18,'')::DATE
+		WHERE username = $19`,
+		u.Nickname,
+		u.Balance,
+		u.XP,
+		u.Streak,
+		u.LastLogin,
+		u.LastNickChange,
+		u.IsAdmin,
+		jsonbCol(u.Badges),
+		jsonbCol(u.Avatars),
+		u.ActiveAvatar,
+		jsonbCol(u.CompletedTopics),
+		jsonbCol(u.PromoUsed),
+		jsonbCol(u.FavoriteGames),
+		u.DailyTasksDate,
+		u.DailyTasksDone,
+		u.GamesWonToday,
+		jsonbCol(u.GamesWonTypes),
+		u.LastDailyClaim,
+		u.Username,
+	)
+	if err != nil {
+		log.Printf("UpdateUser(%s): %v", u.Username, err)
+	}
 }
 
 func (s *Store) GetLeaderboard() []models.LeaderboardEntry {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	rows, err := s.db.Query(`
+		SELECT username, nickname, xp, balance,
+		       jsonb_array_length(badges), streak
+		FROM users
+		WHERE is_admin = FALSE
+		ORDER BY xp DESC`)
+	if err != nil {
+		log.Printf("GetLeaderboard: %v", err)
+		return nil
+	}
+	defer rows.Close()
 	var entries []models.LeaderboardEntry
-	for _, u := range s.users {
-		if u.IsAdmin {
-			continue
-		}
-		entries = append(entries, models.LeaderboardEntry{
-			Username: u.Username, Nickname: u.Nickname,
-			XP: u.XP, Balance: u.Balance,
-			Badges: len(u.Badges), Streak: u.Streak,
-		})
-	}
-	for i := 0; i < len(entries); i++ {
-		for j := i + 1; j < len(entries); j++ {
-			if entries[j].XP > entries[i].XP {
-				entries[i], entries[j] = entries[j], entries[i]
-			}
-		}
-	}
-	for i := range entries {
-		entries[i].Rank = i + 1
+	rank := 1
+	for rows.Next() {
+		var e models.LeaderboardEntry
+		rows.Scan(&e.Username, &e.Nickname, &e.XP, &e.Balance, &e.Badges, &e.Streak)
+		e.Rank = rank
+		rank++
+		entries = append(entries, e)
 	}
 	return entries
 }
 
+// ── Promo codes ───────────────────────────────────────────────────────────────
+
 func (s *Store) GetPromo(code string) (*models.PromoCode, bool) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	p, ok := s.promos[code]
-	return p, ok
+	row := s.db.QueryRow(`
+		SELECT code, reward, value, badge_name, avatar_name, uses, used_count
+		FROM promos WHERE code=$1`, code)
+	var p models.PromoCode
+	err := row.Scan(&p.Code, &p.Reward, &p.Value, &p.BadgeName, &p.AvatarName, &p.Uses, &p.UsedCount)
+	if err != nil {
+		return nil, false
+	}
+	return &p, true
 }
 
 func (s *Store) UsePromo(code string) {
-	s.mu.Lock()
-	if p, ok := s.promos[code]; ok {
-		p.UsedCount++
+	_, err := s.db.Exec(`UPDATE promos SET used_count = used_count+1 WHERE code=$1`, code)
+	if err != nil {
+		log.Printf("UsePromo(%s): %v", code, err)
 	}
-	s.mu.Unlock()
-	go s.persist()
 }
 
+// ── Result logging ────────────────────────────────────────────────────────────
+
 func (s *Store) SaveGameResult(r models.GameResult) {
-	s.mu.Lock()
-	s.gameResults = append(s.gameResults, r)
-	s.mu.Unlock()
-	go s.persist()
+	_, err := s.db.Exec(`
+		INSERT INTO game_results (user_id, game_type, score, xp_earned, coins_earned)
+		VALUES ($1,$2,$3,$4,$5)`,
+		r.UserID, r.GameType, r.Score, r.XPEarned, r.CoinsEarned,
+	)
+	if err != nil {
+		log.Printf("SaveGameResult: %v", err)
+	}
 }
 
 func (s *Store) SaveTestResult(r models.TestResult) {
-	s.mu.Lock()
-	s.testResults = append(s.testResults, r)
-	s.mu.Unlock()
-	go s.persist()
+	_, err := s.db.Exec(`
+		INSERT INTO test_results (user_id, score, passed, level, badge_earned)
+		VALUES ($1,$2,$3,$4,$5)`,
+		r.UserID, r.Score, r.Passed, r.Level, r.BadgeEarned,
+	)
+	if err != nil {
+		log.Printf("SaveTestResult: %v", err)
+	}
 }
 
 func (s *Store) SaveCaseResult(r models.CaseResult) {
-	s.mu.Lock()
-	s.caseResults = append(s.caseResults, r)
-	s.mu.Unlock()
-	go s.persist()
+	_, err := s.db.Exec(`
+		INSERT INTO case_results (user_id, case_type, item_emoji, item_rarity, is_duplicate, compensation)
+		VALUES ($1,$2,$3,$4,$5,$6)`,
+		r.UserID, r.CaseType, r.ItemEmoji, r.ItemRarity, r.IsDuplicate, r.Compensation,
+	)
+	if err != nil {
+		log.Printf("SaveCaseResult: %v", err)
+	}
 }
 
+// ── Admin helpers ─────────────────────────────────────────────────────────────
+
 func (s *Store) GetAllUsers() []*models.User {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	rows, err := s.db.Query(userSelect + ` ORDER BY id`)
+	if err != nil {
+		log.Printf("GetAllUsers: %v", err)
+		return nil
+	}
+	defer rows.Close()
 	var out []*models.User
-	for _, u := range s.users {
-		out = append(out, u)
+	for rows.Next() {
+		u, err := scanUser(rows)
+		if err == nil {
+			out = append(out, u)
+		}
 	}
 	return out
 }
 
 func (s *Store) GetGameResults() []models.GameResult {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return append([]models.GameResult{}, s.gameResults...)
+	rows, err := s.db.Query(`
+		SELECT user_id, game_type, score, xp_earned, coins_earned,
+		       to_char(played_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+		FROM game_results ORDER BY played_at DESC`)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	var out []models.GameResult
+	for rows.Next() {
+		var r models.GameResult
+		rows.Scan(&r.UserID, &r.GameType, &r.Score, &r.XPEarned, &r.CoinsEarned, &r.PlayedAt)
+		out = append(out, r)
+	}
+	return out
 }
 
 func (s *Store) GetCaseResults() []models.CaseResult {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return append([]models.CaseResult{}, s.caseResults...)
+	rows, err := s.db.Query(`
+		SELECT user_id, case_type, item_emoji, item_rarity, is_duplicate, compensation,
+		       to_char(played_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+		FROM case_results ORDER BY played_at DESC`)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	var out []models.CaseResult
+	for rows.Next() {
+		var r models.CaseResult
+		rows.Scan(&r.UserID, &r.CaseType, &r.ItemEmoji, &r.ItemRarity,
+			&r.IsDuplicate, &r.Compensation, &r.PlayedAt)
+		out = append(out, r)
+	}
+	return out
 }
 
-// EscapeHTML prevents XSS in user-supplied strings
+// ── Pure utility functions (no DB) ───────────────────────────────────────────
+
 func EscapeHTML(s string) string {
 	result := ""
 	for _, c := range s {
@@ -326,27 +449,38 @@ func Itoa(n int) string {
 
 func CompensationForRarity(rarity string) int {
 	switch rarity {
-	case "common":    return 100
-	case "rare":      return 250
-	case "epic":      return 500
-	case "legendary": return 2500
-	case "mythic":    return 10000
-	default:          return 100
+	case "common":
+		return 100
+	case "rare":
+		return 250
+	case "epic":
+		return 500
+	case "legendary":
+		return 2500
+	case "mythic":
+		return 10000
+	default:
+		return 100
 	}
 }
 
 func XPForRarity(rarity string) int {
 	switch rarity {
-	case "common":    return 1
-	case "rare":      return 5
-	case "epic":      return 10
-	case "legendary": return 20
-	case "mythic":    return 100
-	default:          return 1
+	case "common":
+		return 1
+	case "rare":
+		return 5
+	case "epic":
+		return 10
+	case "legendary":
+		return 20
+	case "mythic":
+		return 100
+	default:
+		return 1
 	}
 }
 
-// RollCase — server-side randomized case opening
 func RollCase(caseType string, userAvatars []string, userBadges []string, isBadgeCase bool) (string, string, bool) {
 	seed := uint64(time.Now().UnixNano())
 	seed ^= seed >> 33
@@ -364,10 +498,14 @@ func RollCase(caseType string, userAvatars []string, userBadges []string, isBadg
 		}
 		var rarity string
 		switch {
-		case r < 40:  rarity = "common"
-		case r < 70:  rarity = "rare"
-		case r < 90:  rarity = "epic"
-		default:      rarity = "legendary"
+		case r < 40:
+			rarity = "common"
+		case r < 70:
+			rarity = "rare"
+		case r < 90:
+			rarity = "epic"
+		default:
+			rarity = "legendary"
 		}
 		pool := badgePool[rarity]
 		idx := int(seed>>8) % len(pool)

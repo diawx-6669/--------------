@@ -3,10 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RootRy | Авторы</title>
+    <title>RootRy | О проекте и Авторы</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 512'%3E%3Cpath fill='%230099cc' d='M622.3 162.4l-296-120c-16.5-6.7-35.1-6.7-51.6 0l-296 120c-17.2 7-20.1 29.5-4.8 39.4l112 72.3c2.4 1.5 5.2 2.3 8 2.3H504c2.8 0 5.6-.8 8-2.3l112-72.3c15.2-10 12.3-32.4-4.8-39.4zM532.7 301.9l-20.7 13.4c-6 3.9-13 6-20.1 6H148.1c-7.1 0-14.1-2.1-20.1-6l-20.7-13.4c-4.4-2.9-10.3-1.6-13.2 2.9l-21.3 32.8c-4.6 7.1-1.6 16.5 6.2 19.8l197.4 82.5c24.6 10.3 52.6 10.3 77.2 0l197.4-82.5c7.8-3.3 10.8-12.7 6.2-19.8l-21.3-32.8c-2.9-4.5-8.8-5.8-13.2-2.9z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="home-style.css">
+    
+    <style>
+        .about-card, .team-card, .leader-card {
+            background: var(--bg-card, #ffffff);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+            color: var(--text-color, #333);
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 1.4rem;
+            color: var(--primary-color, #0099cc);
+        }
+        .about-text {
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .about-text strong {
+            color: var(--primary-color, #0099cc);
+        }
+        .team-grid {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .team-member {
+            flex: 1;
+            min-width: 140px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .member-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #f0f0f0;
+            border: 3px solid var(--primary-color, #0099cc);
+            margin-bottom: 12px;
+        }
+        .member-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .member-role {
+            font-size: 0.9rem;
+            color: #777;
+            background: #f4f4f4;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+        .leader-container {
+            display: flex;
+            justify-content: center;
+        }
+        .leader-container .team-member {
+            max-width: 250px;
+        }
+        .copyright-footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 60px; /* Отступ для нижнего таббара */
+        }
+    </style>
 </head>
 <body>
 
@@ -32,26 +108,86 @@
 
     <main class="main-content">
         <section class="app-window">
-            <h1>О проекте</h1>
+            <h1>О проекте RootRy</h1>
             
-            <div class="authors-placeholder card">
-                <div class="content-wrapper">
-                    <div class="title-inline">
-                        <i class="fa-solid fa-users"></i>
-                        <h2>Команда разработчиков</h2>
-                    </div>
-                    <p>RootRy — это инновационная геймифицированная платформа для увлекательного изучения русского языка. Здесь собраны лучшие механики вовлечения: мини-игры, симуляторы экзаменов, личные профили со значками и интерактивная карта знаний.</p>
-                    
-                    <div class="tech-stack-tagbox">
-                        <span class="tech-tag"><i class="fa-brands fa-html5"></i> HTML5</span>
-                        <span class="tech-tag"><i class="fa-brands fa-css3-alt"></i> CSS3</span>
-                        <span class="tech-tag"><i class="fa-brands fa-js"></i> Vanilla JS</span>
-                        <span class="tech-tag"><i class="fa-brands fa-golang"></i> Go (Golang)</span>
-                    </div>
+           <div class="about-card">
+                <div class="section-header">
+                    <i class="fa-solid fa-rocket"></i>
+                    <h2>Философия и миссия RootRy</h2>
+                </div>
+                <p class="about-text"><strong>RootRy</strong> — это не просто образовательная платформа, это инновационный подход к изучению русского языка. Мы разрушаем стереотип о том, что учеба должна быть скучной и монотонной. Наша главная миссия — создать цифровую среду, где пользователи осваивают сложную грамматику и орфографию через игру, здоровую конкуренцию и визуально понятный прогресс.</p>
+                
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
 
-                    <p class="credits-text">Разработано с душой для эффективного обучения. Проект полностью укомплектован технически и готов к подключению бэкенд-сервера на Go для обработки базы данных, промокодов и живой аналитики.</p>
+                <div class="section-header">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <h2>Ключевые возможности</h2>
+                </div>
+                <ul style="padding-left: 20px; line-height: 1.6; color: var(--text-color, #333); margin-bottom: 20px;">
+                    <li style="margin-bottom: 8px;"><strong>Интерактивное древо навыков:</strong> Наглядная карта вашего обучения. Пользователь открывает новые темы шаг за шагом — от базовых правил к сложным синтаксическим конструкциям.</li>
+                    <li style="margin-bottom: 8px;"><strong>Экономика и мотивация:</strong> Выполняйте задания, зарабатывайте внутреннюю валюту (монеты) и соревнуйтесь с другими учениками в глобальных таблицах лидеров.</li>
+                    <li style="margin-bottom: 8px;"><strong>Симуляторы экзаменов:</strong> Строгие, но справедливые тесты для проверки знаний и подготовки к реальным экзаменам с подробным разбором ошибок.</li>
+                    <li style="margin-bottom: 8px;"><strong>Мини-игры:</strong> Увлекательные механики для быстрого запоминания словарных слов, ударений и исключений из правил.</li>
+                </ul>
+
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+
+                <div class="section-header">
+                    <i class="fa-brands fa-github"></i>
+                    <h2>Технологии и Open Source</h2>
+                </div>
+                <p class="about-text">RootRy разрабатывается с упором на высокую производительность и масштабируемость. Мы открыты к сообществу, и вы можете следить за ходом разработки, обновлениями кодовой базы и архитектурными решениями в нашем репозитории: <a href="https://github.com/diawx-6669/--------------" target="_blank" style="color: var(--primary-color, #0099cc); text-decoration: none; font-weight: bold;">GitHub проекта</a>.</p>
+                
+                <div class="tech-stack-tagbox" style="margin-top: 16px;">
+                    <span class="tech-tag"><i class="fa-brands fa-html5"></i> HTML5 & CSS3</span>
+                    <span class="tech-tag"><i class="fa-brands fa-js"></i> Vanilla JS (Frontend)</span>
+                    <span class="tech-tag"><i class="fa-brands fa-golang"></i> Go (Backend API)</span>
+                    <span class="tech-tag"><i class="fa-solid fa-database"></i> Базы данных & Аналитика</span>
                 </div>
             </div>
+
+            <div class="team-card">
+                <div class="section-header">
+                    <i class="fa-solid fa-code"></i>
+                    <h2>Команда разработчиков</h2>
+                </div>
+                <div class="team-grid">
+                    <div class="team-member">
+                        <img src="default-avatar-social-media-display-600nw-2632690107.webp"  class="member-photo">
+                        <div class="member-name">Қайырбек Нұрбек</div>
+                        <div class="member-role">CEO of RootRy</div>
+                    </div>
+                    <div class="team-member">
+                        <img src="default-avatar-social-media-display-600nw-2632690107.webp"  class="member-photo">
+                        <div class="member-name">Еркін Ералы</div>
+                        <div class="member-role">CEO of RootRy</div>
+                    </div>
+                    <div class="team-member">
+                        <img src="default-avatar-social-media-display-600nw-2632690107.webp"  class="member-photo">
+                        <div class="member-name">Биданов Мансур</div>
+                        <div class="member-role">CEO of RootRy</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leader-card">
+                <div class="section-header" style="justify-content: center;">
+                    <i class="fa-solid fa-user-tie"></i>
+                    <h2>Руководитель проекта</h2>
+                </div>
+                <div class="leader-container">
+                    <div class="team-member">
+                        <img src="default-avatar-social-media-display-600nw-2632690107.webp"  class="member-photo">
+                        <div class="member-name">Айгуль Касенова</div>
+                        <div class="member-role">Руководитель</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="copyright-footer">
+                <i class="fa-regular fa-copyright"></i> 2026 RootRy. Все права защищены.
+            </div>
+
         </section>
     </main>
 

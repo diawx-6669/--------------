@@ -8,38 +8,145 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 512'%3E%3Cpath fill='%230099cc' d='M622.3 162.4l-296-120c-16.5-6.7-35.1-6.7-51.6 0l-296 120c-17.2 7-20.1 29.5-4.8 39.4l112 72.3c2.4 1.5 5.2 2.3 8 2.3H504c2.8 0 5.6-.8 8-2.3l112-72.3c15.2-10 12.3-32.4-4.8-39.4zM532.7 301.9l-20.7 13.4c-6 3.9-13 6-20.1 6H148.1c-7.1 0-14.1-2.1-20.1-6l-20.7-13.4c-4.4-2.9-10.3-1.6-13.2 2.9l-21.3 32.8c-4.6 7.1-1.6 16.5 6.2 19.8l197.4 82.5c24.6 10.3 52.6 10.3 77.2 0l197.4-82.5c7.8-3.3 10.8-12.7 6.2-19.8l-21.3-32.8c-2.9-4.5-8.8-5.8-13.2-2.9z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="home-style.css">
     <style>
-        .profile-card { background:#fff; border-radius:30px; padding:35px 40px; max-width:650px; box-shadow:0 15px 40px rgba(0,0,0,0.06); margin-bottom:20px; }
+        .profile-card { background:#fff; border-radius:30px; padding:35px 40px; max-width:680px; box-shadow:0 15px 40px rgba(0,0,0,0.06); margin-bottom:20px; }
+
+        /* ===== АВАТАР ===== */
         .profile-header { display:flex; align-items:center; gap:24px; margin-bottom:25px; }
-        .profile-avatar { width:80px; height:80px; border-radius:50%; border:3px solid #0099cc; }
+        .avatar-clickable {
+            position:relative; cursor:pointer;
+            width:90px; height:90px; border-radius:50%;
+            border:3px solid #0099cc;
+            overflow:hidden;
+            transition:0.25s;
+            flex-shrink:0;
+        }
+        .avatar-clickable:hover { border-color:#023e50; box-shadow:0 0 0 4px rgba(0,153,204,0.2); }
+        .avatar-clickable img { width:100%; height:100%; object-fit:cover; display:block; }
+        .avatar-edit-hint {
+            position:absolute; bottom:0; left:0; right:0;
+            background:rgba(0,0,0,0.55); color:#fff;
+            font-size:9px; font-weight:700; text-align:center;
+            padding:4px 0; letter-spacing:0.5px;
+        }
         .profile-info h2 { font-size:22px; font-weight:700; color:#023e50; }
         .profile-info .uname { font-size:14px; color:#8e9fae; font-weight:600; }
         .profile-info .streak { font-size:13px; color:#f39c12; font-weight:700; margin-top:4px; }
+
+        /* ===== STATS ===== */
         .stats-row { display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px; }
         .stat-box { background:#f0f4f8; border-radius:16px; padding:14px 22px; text-align:center; flex:1; min-width:90px; }
         .stat-box .val { font-size:22px; font-weight:700; color:#023e50; }
         .stat-box .lbl { font-size:11px; color:#8e9fae; font-weight:600; text-transform:uppercase; margin-top:3px; }
-        .badges-section h3 { font-size:16px; font-weight:700; color:#023e50; margin-bottom:12px; }
-        .badges-grid { display:flex; gap:10px; flex-wrap:wrap; min-height:40px; }
-        .badge-chip { background:#f0f4f8; border-radius:12px; padding:8px 14px; font-size:20px; border:2px solid transparent; cursor:default; transition:0.2s; }
-        .badge-chip:hover { border-color:#0099cc; transform:scale(1.1); }
-        .no-badges { font-size:14px; color:#8e9fae; }
-        .edit-row { display:flex; gap:10px; margin-top:18px; }
-        .edit-input { flex:1; height:44px; background:#f0f4f8; border:2px solid transparent; border-radius:14px; padding:0 16px; font-size:14px; font-weight:600; font-family:'Montserrat',sans-serif; outline:none; transition:0.3s; }
-        .edit-input:focus { border-color:#0099cc; background:#fff; }
-        .save-btn { height:44px; padding:0 22px; background:linear-gradient(90deg,#023e50,#0099cc); border:none; border-radius:14px; color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:'Montserrat',sans-serif; transition:0.2s; white-space:nowrap; }
-        .save-btn:hover { box-shadow:0 5px 15px rgba(0,153,204,0.25); transform:translateY(-1px); }
+
+        /* ===== XP BAR ===== */
         .xp-bar-wrap { margin:10px 0 20px; }
         .xp-bar-label { display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#023e50; margin-bottom:6px; }
         .xp-bar { height:8px; background:#e9eff5; border-radius:10px; overflow:hidden; }
         .xp-bar-fill { height:100%; background:linear-gradient(90deg,#0099cc,#023e50); border-radius:10px; transition:1s; }
-        .logout-btn { background:#e9eff5; color:#023e50; border:none; border-radius:14px; padding:12px 24px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Montserrat',sans-serif; margin-top:10px; transition:0.2s; }
+
+        /* ===== ЗНАЧКИ ===== */
+        .section-title { font-size:15px; font-weight:700; color:#023e50; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
+        .section-title .see-all-btn {
+            font-size:12px; font-weight:600; color:#0099cc; cursor:pointer; background:none; border:none;
+            padding:4px 10px; border-radius:8px; font-family:'Montserrat',sans-serif;
+            transition:0.2s;
+        }
+        .section-title .see-all-btn:hover { background:#f0f4f8; }
+
+        .badges-strip { display:flex; gap:10px; flex-wrap:nowrap; overflow:hidden; min-height:50px; align-items:center; }
+        .badge-chip {
+            background:#f0f4f8; border-radius:12px; padding:8px 14px; font-size:22px;
+            border:2px solid transparent; cursor:default; transition:0.2s; flex-shrink:0;
+        }
+        .badge-chip:hover { border-color:#0099cc; transform:scale(1.1); }
+        .badge-chip.locked { filter:grayscale(1); opacity:0.45; position:relative; cursor:default; }
+        .no-badges { font-size:14px; color:#8e9fae; }
+
+        /* ===== МОДАЛ ВСЕ ЗНАЧКИ ===== */
+        .modal-overlay {
+            display:none; position:fixed; inset:0; z-index:5000;
+            background:rgba(2,20,30,0.75); backdrop-filter:blur(10px);
+            align-items:center; justify-content:center;
+        }
+        .modal-overlay.show { display:flex; }
+        .modal-box {
+            background:#fff; border-radius:28px; padding:36px 40px;
+            max-width:560px; width:90vw; max-height:80vh; overflow-y:auto;
+            box-shadow:0 30px 80px rgba(0,0,0,0.2);
+            animation:modalIn 0.3s cubic-bezier(.34,1.56,.64,1) both;
+        }
+        @keyframes modalIn { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
+        .modal-title { font-size:18px; font-weight:800; color:#023e50; margin-bottom:6px; }
+        .modal-sub { font-size:13px; color:#8e9fae; margin-bottom:22px; }
+        .modal-close { float:right; background:none; border:none; font-size:22px; cursor:pointer; color:#8e9fae; margin-top:-4px; transition:0.2s; }
+        .modal-close:hover { color:#023e50; }
+        .all-badges-grid { display:flex; gap:12px; flex-wrap:wrap; }
+        .badge-item {
+            display:flex; flex-direction:column; align-items:center; gap:5px;
+            padding:12px 10px; border-radius:14px; background:#f8fafc;
+            border:2px solid transparent; cursor:default; transition:0.2s; min-width:70px;
+        }
+        .badge-item.owned { border-color:#e0f2fe; cursor:pointer; }
+        .badge-item.owned:hover { border-color:#0099cc; background:#f0f9ff; }
+        .badge-item.locked-item { opacity:0.4; position:relative; }
+        .badge-item .b-emoji { font-size:28px; }
+        .badge-item .b-label { font-size:10px; font-weight:700; color:#023e50; text-align:center; }
+        .badge-item .b-lock { font-size:14px; }
+        .lock-overlay { position:absolute; top:6px; right:6px; font-size:12px; }
+
+        /* ===== АВАТАР ПИКЕР МОДАЛ ===== */
+        .avatar-modal-box {
+            background:#fff; border-radius:28px; padding:36px 40px;
+            max-width:620px; width:92vw; max-height:82vh; overflow-y:auto;
+            box-shadow:0 30px 80px rgba(0,0,0,0.2);
+            animation:modalIn 0.3s cubic-bezier(.34,1.56,.64,1) both;
+        }
+        .avatar-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:14px; margin-top:8px; }
+        .avatar-option {
+            display:flex; flex-direction:column; align-items:center; gap:8px;
+            padding:14px 8px; border-radius:18px; cursor:pointer;
+            border:2.5px solid transparent; background:#f8fafc; transition:0.2s;
+        }
+        .avatar-option:hover { background:#f0f9ff; border-color:#bae6fd; }
+        .avatar-option.selected { border-color:#0099cc; background:#e0f9ff; }
+        .avatar-option.locked-av { opacity:0.38; cursor:default; pointer-events:none; }
+        .avatar-option img { width:60px; height:60px; border-radius:50%; object-fit:cover; }
+        .avatar-option .av-emoji { font-size:44px; line-height:1; }
+        .avatar-option .av-label { font-size:10px; font-weight:700; color:#023e50; text-align:center; }
+        .avatar-option .av-rarity {
+            font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;
+            padding:2px 8px; border-radius:6px; color:#fff;
+        }
+        .rar-common    { background:#6b7280; }
+        .rar-rare      { background:#3b82f6; }
+        .rar-epic      { background:#a855f7; }
+        .rar-legendary { background:#f59e0b; }
+        .rar-mythic    { background:#ef4444; }
+
+        .rarity-section-title { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#8e9fae; margin:18px 0 8px; }
+
+        /* ===== НИКНЕЙМ ===== */
+        .edit-row { display:flex; gap:10px; margin-top:8px; }
+        .edit-input { flex:1; height:44px; background:#f0f4f8; border:2px solid transparent; border-radius:14px; padding:0 16px; font-size:14px; font-weight:600; font-family:'Montserrat',sans-serif; outline:none; transition:0.3s; }
+        .edit-input:focus { border-color:#0099cc; background:#fff; }
+        .save-btn { height:44px; padding:0 22px; background:linear-gradient(90deg,#023e50,#0099cc); border:none; border-radius:14px; color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:'Montserrat',sans-serif; transition:0.2s; white-space:nowrap; }
+        .save-btn:hover { box-shadow:0 5px 15px rgba(0,153,204,0.25); transform:translateY(-1px); }
+
+        .logout-btn { background:#e9eff5; color:#023e50; border:none; border-radius:14px; padding:12px 24px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Montserrat',sans-serif; margin-top:14px; transition:0.2s; }
         .logout-btn:hover { background:#e74c3c; color:#fff; }
-        .admin-box { margin-top:20px; background:#fffcf0; border:2px dashed #f39c12; border-radius:20px; padding:22px; }
-        .admin-box h3 { color:#d35400; font-size:16px; font-weight:700; margin-bottom:10px; }
-        .admin-stats { display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px; }
-        .admin-stat { background:#fff; border-radius:12px; padding:12px 18px; text-align:center; flex:1; min-width:80px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
-        .admin-stat .v { font-size:20px; font-weight:700; color:#023e50; }
-        .admin-stat .l { font-size:11px; color:#8e9fae; font-weight:600; }
+
+        /* ===== КНОПКА ПЕРЕХОДА В АДМИНКУ ===== */
+        .admin-goto-btn {
+            display:flex; align-items:center; gap:10px;
+            background:linear-gradient(90deg,#023e50,#0d6e8a);
+            color:#fff; border:none; border-radius:16px;
+            padding:14px 24px; font-size:14px; font-weight:700;
+            cursor:pointer; font-family:'Montserrat',sans-serif;
+            margin-top:14px; transition:0.25s; width:100%; justify-content:center;
+            box-shadow:0 6px 20px rgba(2,62,80,0.2);
+        }
+        .admin-goto-btn:hover { background:linear-gradient(90deg,#0099cc,#023e50); box-shadow:0 8px 28px rgba(0,153,204,0.3); transform:translateY(-1px); }
+        .admin-goto-btn i { font-size:18px; }
     </style>
 </head>
 <body>
@@ -55,6 +162,26 @@
             <div class="balance-box"><i class="fa-solid fa-coins"></i><span id="userBalance">0</span> <small>монет</small></div>
         </div>
     </header>
+
+    <!-- МОДАЛ: ВСЕ ЗНАЧКИ -->
+    <div class="modal-overlay" id="badgesModal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeBadgesModal()">✕</button>
+            <div class="modal-title">🏅 Все значки</div>
+            <div class="modal-sub" id="badgesModalSub">Твои значки и ещё не открытые</div>
+            <div class="all-badges-grid" id="allBadgesGrid"></div>
+        </div>
+    </div>
+
+    <!-- МОДАЛ: ВЫБОР АВАТАРКИ -->
+    <div class="modal-overlay" id="avatarModal">
+        <div class="avatar-modal-box">
+            <button class="modal-close" onclick="closeAvatarModal()">✕</button>
+            <div class="modal-title">🎨 Выбери аватарку</div>
+            <div class="modal-sub">Нажми на аватарку чтобы сменить. Серые — ещё не открыты.</div>
+            <div id="avatarPickerGrid"></div>
+        </div>
+    </div>
 
     <main class="main-content">
         <section class="app-window">
@@ -78,6 +205,61 @@
     initHeader();
     let userData = null;
 
+    // Все возможные значки (те что в BADGE_POOL на shop.html)
+    const ALL_BADGES = [
+        { emoji:'📚', label:'Книга',    rarity:'common' },
+        { emoji:'✏️',  label:'Карандаш', rarity:'common' },
+        { emoji:'📝', label:'Блокнот',  rarity:'common' },
+        { emoji:'🎒', label:'Рюкзак',   rarity:'common' },
+        { emoji:'⭐', label:'Звезда',   rarity:'rare' },
+        { emoji:'🔥', label:'Огонь',    rarity:'rare' },
+        { emoji:'💡', label:'Лампочка', rarity:'rare' },
+        { emoji:'🏆', label:'Кубок',    rarity:'epic' },
+        { emoji:'💎', label:'Алмаз',    rarity:'epic' },
+        { emoji:'🎓', label:'Диплом',   rarity:'legendary' },
+        { emoji:'👑', label:'Корона',   rarity:'legendary' },
+    ];
+
+    // Все аватарки из shop.html AVATAR_POOL
+    const ALL_AVATARS = {
+        common: [
+            { emoji:'🐱', label:'Кот',     img:'https://api.dicebear.com/7.x/bottts/svg?seed=cat&backgroundColor=b6e3f4' },
+            { emoji:'🐶', label:'Пёс',     img:'https://api.dicebear.com/7.x/bottts/svg?seed=dog&backgroundColor=ffd5dc' },
+            { emoji:'🦊', label:'Лис',     img:'https://api.dicebear.com/7.x/bottts/svg?seed=fox&backgroundColor=c0aede' },
+            { emoji:'🐼', label:'Панда',   img:'https://api.dicebear.com/7.x/bottts/svg?seed=panda&backgroundColor=d1f4e0' },
+            { emoji:'🐻', label:'Медведь', img:'https://api.dicebear.com/7.x/bottts/svg?seed=bear&backgroundColor=ffd5dc' },
+            { emoji:'🐸', label:'Лягушка', img:'https://api.dicebear.com/7.x/bottts/svg?seed=frog&backgroundColor=d1f4e0' },
+            { emoji:'🦁', label:'Лев',     img:'https://api.dicebear.com/7.x/bottts/svg?seed=lion&backgroundColor=fde68a' },
+            { emoji:'🐯', label:'Тигр',    img:'https://api.dicebear.com/7.x/bottts/svg?seed=tiger&backgroundColor=fed7aa' },
+        ],
+        rare: [
+            { emoji:'🦄', label:'Единорог', img:'https://api.dicebear.com/7.x/bottts/svg?seed=unicorn&backgroundColor=bfdbfe' },
+            { emoji:'🐉', label:'Дракон',   img:'https://api.dicebear.com/7.x/bottts/svg?seed=dragon&backgroundColor=93c5fd' },
+            { emoji:'🦋', label:'Бабочка',  img:'https://api.dicebear.com/7.x/bottts/svg?seed=butterfly&backgroundColor=c4b5fd' },
+            { emoji:'🦚', label:'Павлин',   img:'https://api.dicebear.com/7.x/bottts/svg?seed=peacock&backgroundColor=a5f3fc' },
+            { emoji:'🦜', label:'Попугай',  img:'https://api.dicebear.com/7.x/bottts/svg?seed=parrot&backgroundColor=bbf7d0' },
+            { emoji:'🦩', label:'Фламинго', img:'https://api.dicebear.com/7.x/bottts/svg?seed=flamingo&backgroundColor=fecdd3' },
+            { emoji:'🐬', label:'Дельфин',  img:'https://api.dicebear.com/7.x/bottts/svg?seed=dolphin&backgroundColor=bae6fd' },
+        ],
+        epic: [
+            { emoji:'🧙', label:'Маг',    img:'https://api.dicebear.com/7.x/bottts/svg?seed=wizard&backgroundColor=ddd6fe' },
+            { emoji:'🧛', label:'Вампир', img:'https://api.dicebear.com/7.x/bottts/svg?seed=vampire&backgroundColor=fecdd3' },
+            { emoji:'🦸', label:'Герой',  img:'https://api.dicebear.com/7.x/bottts/svg?seed=hero&backgroundColor=d9f99d' },
+            { emoji:'🧝', label:'Эльф',   img:'https://api.dicebear.com/7.x/bottts/svg?seed=elf&backgroundColor=a7f3d0' },
+            { emoji:'🧜', label:'Русалка',img:'https://api.dicebear.com/7.x/bottts/svg?seed=mermaid&backgroundColor=7dd3fc' },
+        ],
+        legendary: [
+            { emoji:'👑', label:'Корона', img:'https://api.dicebear.com/7.x/bottts/svg?seed=crown&backgroundColor=fef08a' },
+            { emoji:'🌟', label:'Звезда', img:'https://api.dicebear.com/7.x/bottts/svg?seed=star&backgroundColor=fde68a' },
+            { emoji:'💫', label:'Комета', img:'https://api.dicebear.com/7.x/bottts/svg?seed=comet&backgroundColor=fef9c3' },
+        ],
+        mythic: [
+            { emoji:'🌈', label:'Радуга', img:'https://api.dicebear.com/7.x/bottts/svg?seed=rainbow&backgroundColor=fbcfe8' },
+        ],
+    };
+    const RARITY_LABELS = { common:'Обычная', rare:'Редкая', epic:'Эпическая', legendary:'Легендарная', mythic:'Мифическая' };
+    const RARITY_ORDER = ['common','rare','epic','legendary','mythic'];
+
     async function loadProfile() {
         const r = await API.refreshUser();
         if (!r) return;
@@ -85,27 +267,30 @@
         renderProfile(r);
     }
 
-    function levelFromXP(xp) {
-        return Math.floor(xp / 200) + 1;
-    }
-    function xpToNextLevel(xp) {
-        const lvl = levelFromXP(xp);
-        return lvl * 200;
-    }
+    function levelFromXP(xp) { return Math.floor(xp / 200) + 1; }
 
     function renderProfile(u) {
         const level = levelFromXP(u.xp);
-        const nextXP = xpToNextLevel(u.xp);
         const xpPct = Math.min(100, Math.round((u.xp % 200) / 200 * 100));
+        const myBadges = u.badges || [];
+        const topBadges = myBadges.slice(0, 5);
+
+        // Аватарка — emoji или dicebear картинка
+        const activeAv = u.active_avatar || '🐱';
+        const avData = findAvatarData(activeAv);
+        const avSrc = avData ? avData.img : `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
 
         document.getElementById('profileContent').innerHTML = `
         <div class="profile-card">
             <div class="profile-header">
-                <img class="profile-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}" alt="">
+                <div class="avatar-clickable" onclick="openAvatarModal()" title="Сменить аватарку">
+                    <img id="profileAvatarImg" src="${avSrc}" alt="Аватарка">
+                    <div class="avatar-edit-hint">СМЕНИТЬ</div>
+                </div>
                 <div class="profile-info">
                     <h2>${u.nickname || u.username}</h2>
                     <div class="uname">@${u.username}</div>
-                    <div class="streak">🔥 Серия: ${u.streak || 0} ${u.streak === 1 ? 'день' : u.streak < 5 ? 'дня' : 'дней'}</div>
+                    <div class="streak">🔥 Серия: ${u.streak || 0} ${declDays(u.streak)}</div>
                 </div>
             </div>
 
@@ -121,15 +306,23 @@
                 <div class="xp-bar"><div class="xp-bar-fill" id="xpFill" style="width:0%"></div></div>
             </div>
 
-            <div class="badges-section">
-                <h3>🏅 Мои значки (${(u.badges||[]).length})</h3>
-                <div class="badges-grid">
-                    ${(u.badges||[]).length ? u.badges.map(b=>`<div class="badge-chip" title="${b}">${b}</div>`).join('') : '<span class="no-badges">Пока нет значков. Играй и получай их!</span>'}
+            <!-- ЗНАЧКИ: 5 штук + кнопка -->
+            <div style="margin-bottom:20px">
+                <div class="section-title">
+                    <span>🏅 Мои значки <span style="color:#8e9fae;font-size:13px">(${myBadges.length})</span></span>
+                    <button class="see-all-btn" onclick="openBadgesModal()"><i class="fa-solid fa-grid-2" style="font-size:11px"></i> Посмотреть все</button>
+                </div>
+                <div class="badges-strip">
+                    ${topBadges.length
+                        ? topBadges.map(b=>`<div class="badge-chip" title="${b}">${b}</div>`).join('')
+                        : '<span class="no-badges">Пока нет значков. Играй!</span>'
+                    }
                 </div>
             </div>
 
-            <div style="margin-top:20px;">
-                <h3 style="font-size:14px;font-weight:700;color:#023e50;margin-bottom:10px;">✏️ Изменить никнейм</h3>
+            <!-- НИКНЕЙМ -->
+            <div style="margin-bottom:18px">
+                <div class="section-title" style="margin-bottom:8px"><span>✏️ Изменить никнейм</span></div>
                 <div class="edit-row">
                     <input class="edit-input" id="newNick" placeholder="Новый никнейм..." value="${u.nickname||''}">
                     <button class="save-btn" onclick="saveNickname()">Сохранить</button>
@@ -137,22 +330,105 @@
             </div>
 
             <button class="logout-btn" onclick="API.logout()"><i class="fa-solid fa-right-from-bracket"></i> Выйти из аккаунта</button>
+            ${u.is_admin ? `<button class="admin-goto-btn" onclick="window.location.href='admin.html'"><i class="fa-solid fa-shield-halved"></i> Перейти в панель администратора</button>` : ''}
         </div>
-
-        ${u.is_admin ? `
-        <div class="profile-card admin-box">
-            <h3>👑 Панель администратора</h3>
-            <div class="admin-stats" id="adminStats"><div style="color:#8e9fae;font-size:13px">Загрузка...</div></div>
-            <p style="font-size:13px;color:#7f8c8d;">Все зарегистрированные пользователи и статистика платформы в реальном времени.</p>
-        </div>` : ''}
         `;
 
         setTimeout(() => {
             const fill = document.getElementById('xpFill');
             if (fill) fill.style.width = xpPct + '%';
         }, 100);
+    }
 
-        if (u.is_admin) loadAdminStats();
+    function declDays(n) {
+        if (!n) return 'дней';
+        if (n % 10 === 1 && n % 100 !== 11) return 'день';
+        if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return 'дня';
+        return 'дней';
+    }
+
+    function findAvatarData(emoji) {
+        for (const rarity of RARITY_ORDER) {
+            const found = (ALL_AVATARS[rarity] || []).find(a => a.emoji === emoji);
+            if (found) return found;
+        }
+        return null;
+    }
+
+    /* ===== ЗНАЧКИ МОДАЛ ===== */
+    function openBadgesModal() {
+        if (!userData) return;
+        const myBadges = new Set(userData.badges || []);
+        const grid = document.getElementById('allBadgesGrid');
+        document.getElementById('badgesModalSub').textContent = `У тебя ${myBadges.size} из ${ALL_BADGES.length} значков`;
+        grid.innerHTML = '';
+        ALL_BADGES.forEach(b => {
+            const owned = myBadges.has(b.emoji);
+            const div = document.createElement('div');
+            div.className = 'badge-item' + (owned ? ' owned' : ' locked-item');
+            div.innerHTML = `
+                <div class="b-emoji">${b.emoji}</div>
+                <div class="b-label">${b.label}</div>
+                ${!owned ? '<div class="b-lock">🔒</div>' : ''}
+            `;
+            grid.appendChild(div);
+        });
+        document.getElementById('badgesModal').classList.add('show');
+    }
+    function closeBadgesModal() { document.getElementById('badgesModal').classList.remove('show'); }
+
+    /* ===== АВАТАР ПИКЕР ===== */
+    function openAvatarModal() {
+        if (!userData) return;
+        const myAvatars = new Set(userData.avatars || []);
+        const activeAv = userData.active_avatar || '🐱';
+        const container = document.getElementById('avatarPickerGrid');
+        container.innerHTML = '';
+
+        RARITY_ORDER.forEach(rarity => {
+            const items = ALL_AVATARS[rarity] || [];
+            if (!items.length) return;
+            const title = document.createElement('div');
+            title.className = 'rarity-section-title';
+            const rarColors = { common:'#6b7280', rare:'#3b82f6', epic:'#a855f7', legendary:'#f59e0b', mythic:'#ef4444' };
+            title.innerHTML = `<span style="color:${rarColors[rarity]}">${RARITY_LABELS[rarity]}</span>`;
+            container.appendChild(title);
+            const grid = document.createElement('div');
+            grid.className = 'avatar-grid';
+            items.forEach(av => {
+                const owned = myAvatars.has(av.emoji);
+                const isActive = av.emoji === activeAv;
+                const div = document.createElement('div');
+                div.className = 'avatar-option' + (isActive ? ' selected' : '') + (!owned ? ' locked-av' : '');
+                div.innerHTML = `
+                    <img src="${av.img}" alt="${av.label}">
+                    <div class="av-label">${av.label}</div>
+                    <div class="av-rarity rar-${rarity}">${RARITY_LABELS[rarity]}</div>
+                    ${!owned ? '<div style="font-size:18px;margin-top:2px">🔒</div>' : ''}
+                `;
+                if (owned) {
+                    div.onclick = () => selectAvatar(av);
+                }
+                grid.appendChild(div);
+            });
+            container.appendChild(grid);
+        });
+        document.getElementById('avatarModal').classList.add('show');
+    }
+    function closeAvatarModal() { document.getElementById('avatarModal').classList.remove('show'); }
+
+    async function selectAvatar(av) {
+        if (!userData) return;
+        userData.active_avatar = av.emoji;
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        // Обновить картинку в профиле и хедере
+        const img = document.getElementById('profileAvatarImg');
+        if (img) img.src = av.img;
+        const hav = document.getElementById('headerAvatar');
+        if (hav) hav.src = av.img;
+        closeAvatarModal();
+        showToast(`Аватарка «${av.label}» выбрана!`, 'success');
+        // Переоткрыть модал чтобы видеть выбор (опционально)
     }
 
     async function saveNickname() {
@@ -169,16 +445,9 @@
         }
     }
 
-    async function loadAdminStats() {
-        const r = await API.get('/api/admin/stats');
-        if (!r.ok) return;
-        const s = r.data;
-        document.getElementById('adminStats').innerHTML = `
-            <div class="admin-stat"><div class="v">${s.total_users}</div><div class="l">Игроков</div></div>
-            <div class="admin-stat"><div class="v">${s.total_games}</div><div class="l">Игр сыграно</div></div>
-            <div class="admin-stat"><div class="v">${s.total_xp}</div><div class="l">Суммарный XP</div></div>
-        `;
-    }
+    // Закрытие моделей по клику вне
+    document.getElementById('badgesModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeBadgesModal(); });
+    document.getElementById('avatarModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeAvatarModal(); });
 
     loadProfile();
     </script>

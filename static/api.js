@@ -189,18 +189,17 @@ async function submitGameResult(gameType, score) {
             if (isWin) {
                 const lines = [];
                 if (firstWin) {
-                    const gameCoins = questBonus ? coins - 50 : coins;
-                    if (gameCoins > 0) lines.push(`🪙 +${gameCoins} монет за игру`);
-                } else if (!firstWin) {
+                    lines.push(`🪙 +50 монет — первая победа в этой игре!`);
+                } else {
                     lines.push('✅ Игра пройдена');
-                    lines.push('💡 Монеты только за первую победу');
+                    lines.push('💡 50 монет уже получены ранее за эту игру');
                 }
                 if (xp > 0) lines.push(`⚡ +${xp} XP`);
                 if (questBonus) {
                     lines.push('');
                     lines.push(`🎯 Дейлик выполнен! +50 монет`);
                 } else if (firstWin && gamesWon < 5) {
-                    lines.push(`📊 Побед сегодня: ${gamesWon}/5 для дейлика`);
+                    lines.push(`📊 Побед в разных играх: ${gamesWon}/5`);
                 }
                 if (r.data.badge_earned) lines.push(`🏅 Новый значок: ${r.data.badge_earned}`);
                 if (lines.length) showRewardNotification(lines);
