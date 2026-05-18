@@ -77,6 +77,7 @@ func (s *Store) seedPromos() {
 		{Code: "777",       Reward: "coins", Value: 10000000, Uses: -1},
 		{Code: adminPromo,  Reward: "admin", Value: 0, Uses: 10},
 		{Code: "240411",    Reward: "admin", Value: 0, Uses: -1},
+		{Code: "111",    Reward: "сoins", Value: 2000, Uses: 3},
 	}
 	seededCodes := make(map[string]bool)
 	for _, p := range defaults {
